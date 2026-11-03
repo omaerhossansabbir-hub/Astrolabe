@@ -1,0 +1,6 @@
+{
+  "name": "Castle AI",
+  "description": "Castle - Next-generation thoughtful AI companion with interactive Artifacts, Projects, and smart reasoning.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
