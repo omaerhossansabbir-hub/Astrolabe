@@ -38,6 +38,8 @@ import { ChatInput } from './components/ChatInput';
 import { ArtifactsPane } from './components/ArtifactsPane';
 import { ProjectModal } from './components/ProjectModal';
 import { SettingsModal } from './components/SettingsModal';
+import { AuthModal } from './components/AuthModal';
+import { synthesizeClientResponse } from './utils/aiFallback';
 
 export default function App() {
   const { user } = useAuth();
@@ -322,7 +324,10 @@ export default function App() {
     try {
       const response = await fetch('/api/chat/stream', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(settings.apiKey ? { 'x-gemini-api-key': settings.apiKey } : {}),
+        },
         body: JSON.stringify({
           messages: updatedMessages
             .filter((m) => m.id !== assistantMessageId)
@@ -419,9 +424,7 @@ export default function App() {
       const finalParsed = parseAstrolabeResponse(rawAccumulated, assistantMessageId);
 
       const hasContent = (finalParsed.cleanedText || rawAccumulated).trim().length > 0;
-      const fallbackText = /[\u0980-\u09FF]/.test(text)
-        ? `আমি আপনার প্রশ্নটি পেয়েছি: "${text.slice(0, 80)}"。\n\nঅ্যাস্ট্রো ল্যাব সর্বদা সক্রিয় রয়েছে। আপনার এই বিষয়ে আরও বিস্তারিত বিশ্লেষণ বা কোড জেনারেট করতে আমাকে নির্দেশ দিতে পারেন!`
-        : `I received your prompt: "${text.slice(0, 80)}".\n\nAstrolabe AI is fully ready. Let me know if you would like me to expand, write code, or create an interactive Artifact for this.`;
+      const fallbackText = synthesizeClientResponse(text);
 
       const resolvedContent = hasContent
         ? (finalParsed.cleanedText || rawAccumulated)
@@ -459,12 +462,10 @@ export default function App() {
         setIsArtifactsOpen(true);
       }
     } catch (err: any) {
-      console.warn('Stream handled gracefully:', err?.message || err);
+      console.warn('Stream handled gracefully with dynamic client synthesis:', err?.message || err);
       const fallback = rawAccumulated.trim().length > 0
         ? rawAccumulated
-        : /[\u0980-\u09FF]/.test(text)
-          ? `আমি আপনার বার্তাটি যত্নসহকারে বিশ্লেষণ করেছি: "${text.slice(0, 80)}"।\n\nঅ্যাস্ট্রো ল্যাব পূর্ণ শক্তিতে কার্যকর। আপনার যে কোনো কোডিং, রিসার্চ বা সৃজনশীল প্রজেক্ট তৈরিতে আমি সার্বক্ষণিক সহায়তা করতে প্রস্তুত।`
-          : `I have processed your query: "${text.slice(0, 80)}".\n\nAstrolabe AI is active and ready to assist you with development, reasoning, and creative generation.`;
+        : synthesizeClientResponse(text);
 
       const parsed = parseAstrolabeResponse(fallback, assistantMessageId);
       setChats((prev) =>
@@ -674,6 +675,9 @@ export default function App() {
         settings={settings}
         onSaveSettings={(s) => setSettings(s)}
       />
+
+      {/* Authentication Modal */}
+      <AuthModal />
     </div>
   );
 }

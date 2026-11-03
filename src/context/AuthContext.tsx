@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth, loginWithGoogle, logoutUser } from '../lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import {
+  auth,
+  loginWithGoogle,
+  loginWithEmail,
+  registerWithEmail,
+  logoutUser,
+  getAuthorizedDomainsConsoleUrl,
+} from '../lib/firebase';
 
 export interface UserProfile {
   uid: string;
@@ -15,8 +22,15 @@ interface AuthContextType {
   loading: boolean;
   isSigningIn: boolean;
   signInError: string | null;
+  unauthorizedDomainHost: string | null;
+  authorizedDomainsConsoleUrl: string;
+  isAuthModalOpen: boolean;
+  openAuthModal: () => void;
+  closeAuthModal: () => void;
   clearSignInError: () => void;
   signInWithGoogle: () => Promise<void>;
+  signInWithEmailPass: (email: string, pass: string) => Promise<void>;
+  signUpWithEmailPass: (email: string, pass: string, displayName: string) => Promise<void>;
   signInAsGuest: (name?: string) => void;
   signOut: () => Promise<void>;
 }
@@ -28,8 +42,15 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   isSigningIn: false,
   signInError: null,
+  unauthorizedDomainHost: null,
+  authorizedDomainsConsoleUrl: '',
+  isAuthModalOpen: false,
+  openAuthModal: () => {},
+  closeAuthModal: () => {},
   clearSignInError: () => {},
   signInWithGoogle: async () => {},
+  signInWithEmailPass: async () => {},
+  signUpWithEmailPass: async () => {},
   signInAsGuest: () => {},
   signOut: async () => {},
 });
@@ -39,6 +60,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [signInError, setSignInError] = useState<string | null>(null);
+  const [unauthorizedDomainHost, setUnauthorizedDomainHost] = useState<string | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
     // 1. Check if user already has an active guest profile saved
@@ -57,17 +80,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // 2. Listen to Firebase Auth state
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        // Firebase user takes precedence
         setUser({
           uid: currentUser.uid,
-          displayName: currentUser.displayName || 'Google User',
+          displayName: currentUser.displayName || currentUser.email?.split('@')[0] || 'Astrolabe User',
           email: currentUser.email || null,
           photoURL: currentUser.photoURL || null,
           isAnonymous: currentUser.isAnonymous,
         });
         localStorage.removeItem(GUEST_STORAGE_KEY);
       } else {
-        // If not firebase user, keep guest if set
         const activeGuest = localStorage.getItem(GUEST_STORAGE_KEY);
         if (activeGuest) {
           try {
@@ -85,9 +106,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, []);
 
-  const handleSignIn = async () => {
+  const handleGoogleSignIn = async () => {
     setIsSigningIn(true);
     setSignInError(null);
+    setUnauthorizedDomainHost(null);
 
     try {
       const googleUser = await loginWithGoogle();
@@ -99,26 +121,89 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           photoURL: googleUser.photoURL || null,
           isAnonymous: false,
         });
+        setIsAuthModalOpen(false);
       }
     } catch (err: any) {
       console.warn('Google Sign In caught:', err?.code, err?.message);
       const code = err?.code || '';
 
-      if (code === 'auth/popup-blocked') {
+      if (code === 'auth/unauthorized-domain' || code === 'auth/operation-not-supported-in-this-environment') {
+        const currentHost = typeof window !== 'undefined' ? window.location.hostname : 'your-domain';
+        setUnauthorizedDomainHost(currentHost);
         setSignInError(
-          'আপনার ব্রাউজারে পপআপ ব্লক রয়েছে। অ্যাড্রেস বারের পপআপ আইকনে ক্লিক করে "Allow" করুন, অথবা নিচের "গেস্ট প্রোফাইলে চালিয়ে যান" বাটনে ক্লিক করুন।'
+          `ডোমেইন সেটিংস: "${currentHost}" ডোমেইনটি ফায়ারবেসের Authorized Domains তালিকায় যুক্ত করতে হবে। এছাড়া আপনি সরাসরি নিচে ইমেইল/পাসওয়ার্ড দিয়ে অথবা গেস্ট মোডে তাৎক্ষণিক লগইন করতে পারেন।`
         );
-      } else if (code === 'auth/unauthorized-domain' || code === 'auth/operation-not-supported-in-this-environment') {
-        // Automatically switch to guest profile so user is not stuck
-        signInAsGuest('অ্যাস্ট্রো ইউজার');
+      } else if (code === 'auth/popup-blocked') {
         setSignInError(
-          'ডোমেইন সেটিংসের কারণে সরাসরি গুগল লগইন সীমাবদ্ধ। আপনার জন্য নিরবচ্ছিন্ন ব্যবহারের সুবিধার্থে তাৎক্ষণিক প্রোফাইল তৈরি করা হয়েছে।'
+          'আপনার ব্রাউজারে পপআপ ব্লক করা রয়েছে। অ্যাড্রেস বারের পপআপ আইকন থেকে Allow করুন অথবা নিচে ইমেইল/গেস্ট প্রোফাইলে লগইন করুন।'
         );
       } else if (code === 'auth/popup-closed-by-user') {
-        setSignInError('লগইন পপআপ উইন্ডো বন্ধ করা হয়েছে। আবার চেষ্টা করতে পারেন বা গেস্ট মোড বেছে নিতে পারেন।');
+        setSignInError('লগইন পপআপ উইন্ডো বন্ধ করা হয়েছে।');
       } else {
-        setSignInError('গুগল লগইন সম্পন্ন করা যায়নি। আপনি সরাসরি অ্যাকাউন্ট ছাড়াই অ্যাস্ট্রো ল্যাব ব্যবহার করতে পারেন।');
+        setSignInError(err?.message || 'গুগল লগইন সম্পন্ন করা যায়নি। অনুগ্রহ করে ইমেইল দিয়ে লগইন করুন।');
       }
+    } finally {
+      setIsSigningIn(false);
+    }
+  };
+
+  const handleEmailSignIn = async (email: string, pass: string) => {
+    setIsSigningIn(true);
+    setSignInError(null);
+    try {
+      const fbUser = await loginWithEmail(email, pass);
+      if (fbUser) {
+        setUser({
+          uid: fbUser.uid,
+          displayName: fbUser.displayName || fbUser.email?.split('@')[0] || 'User',
+          email: fbUser.email || null,
+          photoURL: fbUser.photoURL || null,
+          isAnonymous: false,
+        });
+        setIsAuthModalOpen(false);
+      }
+    } catch (err: any) {
+      console.error('Email sign in error:', err);
+      const code = err?.code || '';
+      if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+        setSignInError('ইমেইল বা পাসওয়ার্ড সঠিক নয়। অনুগ্রহ করে পুনরায় যাচাই করুন।');
+      } else if (code === 'auth/invalid-email') {
+        setSignInError('সঠিক ইমেইল অ্যাড্রেস লিখুন।');
+      } else {
+        setSignInError(err?.message || 'ইমেইল সাইন-ইন সম্পন্ন করা যায়নি।');
+      }
+      throw err;
+    } finally {
+      setIsSigningIn(false);
+    }
+  };
+
+  const handleEmailSignUp = async (email: string, pass: string, displayName: string) => {
+    setIsSigningIn(true);
+    setSignInError(null);
+    try {
+      const fbUser = await registerWithEmail(email, pass, displayName);
+      if (fbUser) {
+        setUser({
+          uid: fbUser.uid,
+          displayName: displayName || fbUser.email?.split('@')[0] || 'User',
+          email: fbUser.email || null,
+          photoURL: null,
+          isAnonymous: false,
+        });
+        setIsAuthModalOpen(false);
+      }
+    } catch (err: any) {
+      console.error('Email sign up error:', err);
+      const code = err?.code || '';
+      if (code === 'auth/email-already-in-use') {
+        setSignInError('এই ইমেইল দিয়ে ইতোমধ্যে একটি অ্যাকাউন্ট রয়েছে। "সাইন ইন" অপশনটি ব্যবহার করুন।');
+      } else if (code === 'auth/weak-password') {
+        setSignInError('পাসওয়ার্ডটি অন্তত ৬ অক্ষরের হতে হবে।');
+      } else {
+        setSignInError(err?.message || 'অ্যাকাউন্ট তৈরি করা যায়নি।');
+      }
+      throw err;
     } finally {
       setIsSigningIn(false);
     }
@@ -147,6 +232,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(guestProfile));
     setUser(guestProfile);
     setSignInError(null);
+    setUnauthorizedDomainHost(null);
+    setIsAuthModalOpen(false);
   };
 
   const handleSignOut = async () => {
@@ -162,6 +249,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearSignInError = () => {
     setSignInError(null);
+    setUnauthorizedDomainHost(null);
   };
 
   return (
@@ -171,8 +259,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         isSigningIn,
         signInError,
+        unauthorizedDomainHost,
+        authorizedDomainsConsoleUrl: getAuthorizedDomainsConsoleUrl(),
+        isAuthModalOpen,
+        openAuthModal: () => {
+          setSignInError(null);
+          setIsAuthModalOpen(true);
+        },
+        closeAuthModal: () => setIsAuthModalOpen(false),
         clearSignInError,
-        signInWithGoogle: handleSignIn,
+        signInWithGoogle: handleGoogleSignIn,
+        signInWithEmailPass: handleEmailSignIn,
+        signUpWithEmailPass: handleEmailSignUp,
         signInAsGuest,
         signOut: handleSignOut,
       }}

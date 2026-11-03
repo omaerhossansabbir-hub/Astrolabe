@@ -119,4 +119,5 @@ export interface UserSettings {
   responseStyle: ResponseStyle;
   customSystemPrompt: string;
   language: 'auto' | 'bn' | 'en';
+  apiKey?: string;
 }

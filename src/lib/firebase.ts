@@ -1,5 +1,15 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  signInAnonymously,
+  signOut,
+} from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -61,12 +71,53 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   throw new Error(JSON.stringify(errInfo));
 }
 
+export const getAuthorizedDomainsConsoleUrl = () => {
+  return `https://console.firebase.google.com/project/${firebaseConfig.projectId}/authentication/settings`;
+};
+
+export const getFirebaseProjectId = () => {
+  return firebaseConfig.projectId;
+};
+
 export const loginWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
     return result.user;
   } catch (error: any) {
     console.error('Error signing in with Google:', error?.code || error);
+    throw error;
+  }
+};
+
+export const loginWithEmail = async (email: string, pass: string) => {
+  try {
+    const res = await signInWithEmailAndPassword(auth, email, pass);
+    return res.user;
+  } catch (error: any) {
+    console.error('Error signing in with email:', error?.code || error);
+    throw error;
+  }
+};
+
+export const registerWithEmail = async (email: string, pass: string, displayName: string) => {
+  try {
+    const res = await createUserWithEmailAndPassword(auth, email, pass);
+    if (displayName && res.user) {
+      await updateProfile(res.user, { displayName });
+    }
+    return res.user;
+  } catch (error: any) {
+    console.error('Error registering with email:', error?.code || error);
+    throw error;
+  }
+};
+
+export const loginFirebaseAnonymously = async () => {
+  try {
+    const res = await signInAnonymously(auth);
+    return res.user;
+  } catch (error: any) {
+    console.error('Error signing in anonymously:', error?.code || error);
     throw error;
   }
 };

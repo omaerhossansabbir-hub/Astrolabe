@@ -22,7 +22,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onSaveSettings,
 }) => {
   const [localSettings, setLocalSettings] = useState<UserSettings>(settings);
-  const [activeTab, setActiveTab] = useState<'general' | 'models' | 'custom' | 'about'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'models' | 'api' | 'custom' | 'about'>('general');
 
   if (!isOpen) return null;
 
@@ -52,10 +52,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Tab switcher */}
-        <div className="flex border-b border-zinc-200 dark:border-zinc-800 px-6 bg-zinc-50 dark:bg-zinc-900 text-xs font-medium">
+        <div className="flex border-b border-zinc-200 dark:border-zinc-800 px-6 bg-zinc-50 dark:bg-zinc-900 text-xs font-medium overflow-x-auto">
           <button
             onClick={() => setActiveTab('general')}
-            className={`py-3 px-3 border-b-2 transition-colors cursor-pointer ${
+            className={`py-3 px-3 border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'general'
                 ? 'border-zinc-950 dark:border-white text-zinc-950 dark:text-white font-semibold'
                 : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
@@ -65,7 +65,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
           <button
             onClick={() => setActiveTab('models')}
-            className={`py-3 px-3 border-b-2 transition-colors cursor-pointer ${
+            className={`py-3 px-3 border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'models'
                 ? 'border-zinc-950 dark:border-white text-zinc-950 dark:text-white font-semibold'
                 : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
@@ -74,8 +74,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             Default Model
           </button>
           <button
+            onClick={() => setActiveTab('api')}
+            className={`py-3 px-3 border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
+              activeTab === 'api'
+                ? 'border-zinc-950 dark:border-white text-zinc-950 dark:text-white font-semibold'
+                : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+            }`}
+          >
+            API Key & Deployment
+          </button>
+          <button
             onClick={() => setActiveTab('custom')}
-            className={`py-3 px-3 border-b-2 transition-colors cursor-pointer ${
+            className={`py-3 px-3 border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'custom'
                 ? 'border-zinc-950 dark:border-white text-zinc-950 dark:text-white font-semibold'
                 : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
@@ -85,7 +95,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
           <button
             onClick={() => setActiveTab('about')}
-            className={`py-3 px-3 border-b-2 transition-colors cursor-pointer ${
+            className={`py-3 px-3 border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'about'
                 ? 'border-zinc-950 dark:border-white text-zinc-950 dark:text-white font-semibold'
                 : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
@@ -266,6 +276,67 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {activeTab === 'api' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
+                  Google Gemini API Key (ঐচ্ছিক / Optional)
+                </label>
+                <p className="text-xs text-zinc-500 mb-3 leading-relaxed">
+                  ভার্সেল (Vercel) বা যেকোনো কাস্টম হোস্টিংয়ে ডিপ্লয় করার পর নিজস্ব কোটা ব্যবহার করতে অথবা কোনো সীমা ছাড়াই অত্যন্ত দ্রুততম রেসপন্সের জন্য আপনার নিজস্ব Gemini API Key এখানে দিতে পারেন। কী-টি সম্পূর্ণ এনক্রিপ্টেড অবস্থায় কেবল আপনার ব্রাউজারেই সংরক্ষিত থাকে।
+                </p>
+                <div className="relative">
+                  <input
+                    type="password"
+                    value={localSettings.apiKey || ''}
+                    onChange={(e) =>
+                      setLocalSettings({ ...localSettings, apiKey: e.target.value.trim() })
+                    }
+                    placeholder="AIzaSy..."
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-mono text-xs outline-none focus:border-zinc-950 dark:focus:border-white"
+                  />
+                  {localSettings.apiKey && (
+                    <button
+                      type="button"
+                      onClick={() => setLocalSettings({ ...localSettings, apiKey: '' })}
+                      className="absolute right-3 top-2.5 text-xs text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer"
+                    >
+                      মুছুন
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs space-y-2">
+                <div className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
+                  <span>কীভাবে ফ্রি API Key পাবেন?</span>
+                  <a
+                    href="https://aistudio.google.com/app/apikey"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs underline hover:text-zinc-600 dark:hover:text-zinc-300 font-normal"
+                  >
+                    Google AI Studio খুলুন ↗
+                  </a>
+                </div>
+                <ol className="list-decimal pl-4 space-y-1 text-zinc-600 dark:text-zinc-400 text-[11px] leading-relaxed">
+                  <li>Google AI Studio-তে গিয়ে "Get API key" বাটনে ক্লিক করুন।</li>
+                  <li>একটি প্রজেক্ট সিলেক্ট করে "Create API Key" বাটনে চাপ দিন।</li>
+                  <li>কী-টি কপি করে এনে এখানে পেস্ট করে নিচে "Save Preferences" চাপুন।</li>
+                </ol>
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs space-y-1.5">
+                <div className="font-semibold text-zinc-900 dark:text-zinc-100">
+                  Vercel ডিপ্লয়মেন্ট টিপস:
+                </div>
+                <p className="text-zinc-600 dark:text-zinc-400 text-[11px] leading-relaxed">
+                  যদি আপনি চান যে আপনার ভিজিটরদের কাউকে নিজের API Key দিতে হবে না, তবে Vercel ড্যাশবোর্ডে গিয়ে <strong>Project Settings → Environment Variables</strong> এ গিয়ে <code className="bg-zinc-200 dark:bg-zinc-800 px-1 py-0.5 rounded text-[10px]">GEMINI_API_KEY</code> নামে আপনার কী যুক্ত করে Re-deploy করুন।
+                </p>
+              </div>
             </div>
           )}
 
