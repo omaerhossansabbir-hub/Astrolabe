@@ -8,6 +8,9 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 export const auth = getAuth(app);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: 'select_account',
+});
 
 export async function testConnection() {
   try {
@@ -62,8 +65,8 @@ export const loginWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
     return result.user;
-  } catch (error) {
-    console.error('Error signing in with Google:', error);
+  } catch (error: any) {
+    console.error('Error signing in with Google:', error?.code || error);
     throw error;
   }
 };

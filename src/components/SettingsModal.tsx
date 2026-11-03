@@ -32,33 +32,33 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="relative w-full max-w-2xl max-h-[85vh] flex flex-col bg-white dark:bg-[#201F1D] rounded-2xl border border-[#E2DCD2] dark:border-[#33302B] shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+      <div className="relative w-full max-w-2xl max-h-[85vh] flex flex-col bg-white dark:bg-[#0E0E11] rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E8E2D7] dark:border-[#2F2D2A]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center gap-2">
             <AstrolabeLogo size={24} />
-            <h2 className="text-base font-semibold text-[#1F1D1A] dark:text-[#EDEAE4]">
+            <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
               Astrolabe Settings & Preferences
             </h2>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#8E8980] hover:text-[#1F1D1A] dark:hover:text-[#EDEAE4] hover:bg-[#F2ECE3] dark:hover:bg-[#2B2926] cursor-pointer"
+            className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Tab switcher */}
-        <div className="flex border-b border-[#E8E2D7] dark:border-[#2F2D2A] px-6 bg-[#FAF9F5] dark:bg-[#181817] text-xs font-medium">
+        <div className="flex border-b border-zinc-200 dark:border-zinc-800 px-6 bg-zinc-50 dark:bg-zinc-900 text-xs font-medium">
           <button
             onClick={() => setActiveTab('general')}
             className={`py-3 px-3 border-b-2 transition-colors cursor-pointer ${
               activeTab === 'general'
-                ? 'border-[#D95D39] text-[#D95D39] font-semibold'
-                : 'border-transparent text-[#736E65] dark:text-[#9E9990] hover:text-[#1F1D1A]'
+                ? 'border-zinc-950 dark:border-white text-zinc-950 dark:text-white font-semibold'
+                : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
             }`}
           >
             General & Appearance
@@ -67,8 +67,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             onClick={() => setActiveTab('models')}
             className={`py-3 px-3 border-b-2 transition-colors cursor-pointer ${
               activeTab === 'models'
-                ? 'border-[#D95D39] text-[#D95D39] font-semibold'
-                : 'border-transparent text-[#736E65] dark:text-[#9E9990] hover:text-[#1F1D1A]'
+                ? 'border-zinc-950 dark:border-white text-zinc-950 dark:text-white font-semibold'
+                : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
             }`}
           >
             Default Model
@@ -77,8 +77,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             onClick={() => setActiveTab('custom')}
             className={`py-3 px-3 border-b-2 transition-colors cursor-pointer ${
               activeTab === 'custom'
-                ? 'border-[#D95D39] text-[#D95D39] font-semibold'
-                : 'border-transparent text-[#736E65] dark:text-[#9E9990] hover:text-[#1F1D1A]'
+                ? 'border-zinc-950 dark:border-white text-zinc-950 dark:text-white font-semibold'
+                : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
             }`}
           >
             Custom Instructions
@@ -87,8 +87,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             onClick={() => setActiveTab('about')}
             className={`py-3 px-3 border-b-2 transition-colors cursor-pointer ${
               activeTab === 'about'
-                ? 'border-[#D95D39] text-[#D95D39] font-semibold'
-                : 'border-transparent text-[#736E65] dark:text-[#9E9990] hover:text-[#1F1D1A]'
+                ? 'border-zinc-950 dark:border-white text-zinc-950 dark:text-white font-semibold'
+                : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
             }`}
           >
             About Astrolabe
@@ -106,9 +106,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </label>
                 <div className="grid grid-cols-3 gap-3">
                   {[
-                    { id: 'light', label: 'Warm Paper (Light)', icon: <Sun className="w-4 h-4 text-amber-500" /> },
-                    { id: 'dark', label: 'Obsidian (Dark)', icon: <Moon className="w-4 h-4 text-indigo-400" /> },
-                    { id: 'system', label: 'System Default', icon: <Monitor className="w-4 h-4 text-[#8E8980]" /> },
+                    { id: 'light', label: 'Light', icon: <Sun className="w-4 h-4 text-zinc-900" /> },
+                    { id: 'dark', label: 'Dark', icon: <Moon className="w-4 h-4 text-zinc-200" /> },
+                    { id: 'system', label: 'System', icon: <Monitor className="w-4 h-4 text-zinc-500" /> },
                   ].map((mode) => (
                     <button
                       key={mode.id}
@@ -118,8 +118,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       }
                       className={`flex flex-col items-center gap-2 p-3.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
                         localSettings.theme === mode.id
-                          ? 'border-[#D95D39] bg-[#FAF6EE] dark:bg-[#2C2A27] text-[#D95D39] ring-1 ring-[#D95D39]'
-                          : 'border-[#E2DCD2] dark:border-[#363430] hover:bg-[#F9F6F0] dark:hover:bg-[#252422]'
+                          ? 'border-zinc-950 dark:border-white bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-white ring-1 ring-zinc-950 dark:ring-white'
+                          : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300'
                       }`}
                     >
                       {mode.icon}
@@ -131,7 +131,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               {/* Language Default */}
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-[#736E65] dark:text-[#9E9990] mb-2">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-2">
                   Language Preference
                 </label>
                 <div className="grid grid-cols-3 gap-3">
@@ -148,8 +148,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       }
                       className={`p-3 rounded-xl border text-xs font-medium text-center transition-all cursor-pointer ${
                         localSettings.language === lang.id
-                          ? 'border-[#D95D39] bg-[#FAF6EE] dark:bg-[#2C2A27] text-[#D95D39] ring-1 ring-[#D95D39]'
-                          : 'border-[#E2DCD2] dark:border-[#363430] hover:bg-[#F9F6F0] dark:hover:bg-[#252422]'
+                          ? 'border-zinc-950 dark:border-white bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-white ring-1 ring-zinc-950 dark:ring-white'
+                          : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300'
                       }`}
                     >
                       {lang.label}
@@ -160,7 +160,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               {/* Response Style Default */}
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-[#736E65] dark:text-[#9E9990] mb-2">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-2">
                   Default Response Style
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -171,8 +171,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       onClick={() => setLocalSettings({ ...localSettings, responseStyle: st })}
                       className={`p-2.5 rounded-xl border text-xs font-medium capitalize text-center transition-all cursor-pointer ${
                         localSettings.responseStyle === st
-                          ? 'border-[#D95D39] bg-[#FAF6EE] dark:bg-[#2C2A27] text-[#D95D39] ring-1 ring-[#D95D39]'
-                          : 'border-[#E2DCD2] dark:border-[#363430] hover:bg-[#F9F6F0] dark:hover:bg-[#252422]'
+                          ? 'border-zinc-950 dark:border-white bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-white ring-1 ring-zinc-950 dark:ring-white'
+                          : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300'
                       }`}
                     >
                       {st}
@@ -185,10 +185,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="space-y-4 pt-2">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-xs font-semibold text-[#1F1D1A] dark:text-[#EDEAE4]">
+                    <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
                       Extended Thinking by Default
                     </div>
-                    <div className="text-[12px] text-[#8E8980]">
+                    <div className="text-[12px] text-zinc-500">
                       Astrolabe will perform deep step-by-step reasoning before complex answers.
                     </div>
                   </div>
@@ -198,16 +198,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     onChange={(e) =>
                       setLocalSettings({ ...localSettings, enableThinking: e.target.checked })
                     }
-                    className="w-4 h-4 accent-[#D95D39] cursor-pointer"
+                    className="w-4 h-4 accent-zinc-950 dark:accent-white cursor-pointer"
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-xs font-semibold text-[#1F1D1A] dark:text-[#EDEAE4]">
+                    <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
                       Audio Response Synthesis
                     </div>
-                    <div className="text-[12px] text-[#8E8980]">
+                    <div className="text-[12px] text-zinc-500">
                       Enable text-to-speech speaker controls on messages.
                     </div>
                   </div>
@@ -217,7 +217,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     onChange={(e) =>
                       setLocalSettings({ ...localSettings, soundEnabled: e.target.checked })
                     }
-                    className="w-4 h-4 accent-[#D95D39] cursor-pointer"
+                    className="w-4 h-4 accent-zinc-950 dark:accent-white cursor-pointer"
                   />
                 </div>
               </div>
@@ -226,7 +226,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {activeTab === 'models' && (
             <div className="space-y-3">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#736E65] dark:text-[#9E9990] mb-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-2">
                 Select Default Intelligence Engine
               </label>
 
@@ -238,8 +238,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   }
                   className={`flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer ${
                     localSettings.defaultModel === model.id
-                      ? 'border-[#D95D39] bg-[#FAF6EE] dark:bg-[#2C2A27] ring-1 ring-[#D95D39]'
-                      : 'border-[#E2DCD2] dark:border-[#363430] hover:bg-[#F9F6F0] dark:hover:bg-[#252422]'
+                      ? 'border-zinc-950 dark:border-white bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-950 dark:ring-white'
+                      : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-850'
                   }`}
                 >
                   <input
@@ -247,20 +247,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     name="defaultModel"
                     checked={localSettings.defaultModel === model.id}
                     onChange={() => {}}
-                    className="mt-1 accent-[#D95D39]"
+                    className="mt-1 accent-zinc-950 dark:accent-white"
                   />
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-xs text-[#1F1D1A] dark:text-[#EDEAE4]">
+                      <span className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">
                         {model.name}
                       </span>
                       {model.badge && (
-                        <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[#D95D39]/10 text-[#D95D39] font-semibold">
+                        <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 font-semibold">
                           {model.badge}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[#736E65] dark:text-[#9E9990] mt-1">
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
                       {model.description}
                     </p>
                   </div>
@@ -271,10 +271,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {activeTab === 'custom' && (
             <div className="space-y-3">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#736E65] dark:text-[#9E9990]">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
                 User Persona & Global Instructions
               </label>
-              <p className="text-xs text-[#8E8980]">
+              <p className="text-xs text-zinc-500">
                 What would you like Astrolabe to know about you to provide tailored responses?
               </p>
               <textarea
@@ -282,32 +282,32 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onChange={(e) =>
                   setLocalSettings({ ...localSettings, customSystemPrompt: e.target.value })
                 }
-                placeholder="e.g., I am a full-stack engineer and Bengali writer. When writing code, prefer modern TypeScript and clean architectural patterns. When speaking in Bengali, use rich poetic vocabulary..."
+                placeholder="e.g., I am a full-stack engineer and writer. When writing code, prefer modern TypeScript and clean architectural patterns. When speaking in Bengali, use rich vocabulary..."
                 rows={6}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-[#DED7CB] dark:border-[#383531] bg-[#FAF9F5] dark:bg-[#1A1918] text-[#1F1D1A] dark:text-[#EDEAE4] outline-none focus:border-[#D95D39] resize-none leading-relaxed text-xs sm:text-sm"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 outline-none focus:border-zinc-950 dark:focus:border-white resize-none leading-relaxed text-xs sm:text-sm"
               />
             </div>
           )}
 
           {activeTab === 'about' && (
-            <div className="space-y-4 text-xs text-[#635F59] dark:text-[#A8A39A] leading-relaxed">
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-[#FAF6EE] dark:bg-[#252422] border border-[#E8E2D7] dark:border-[#33302B]">
+            <div className="space-y-4 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
                 <AstrolabeLogo size={36} showText={true} />
               </div>
 
               <p>
-                <strong>Astrolabe AI</strong> is a next-generation AI assistant built for deep intellect, creative nuance, and architectural clarity.
-                Inspired by Claude’s serene interface, Astrolabe brings real-time Artifacts, Projects, response style controls, and step-by-step thinking to your fingertips.
+                <strong className="text-zinc-900 dark:text-zinc-100">Astrolabe AI</strong> is a next-generation AI assistant built for deep intellect, creative nuance, and architectural clarity.
+                Astrolabe brings real-time Artifacts, Projects, response style controls, and step-by-step thinking to your fingertips in a pristine monochrome environment.
               </p>
 
               <div className="grid grid-cols-2 gap-3 pt-2">
-                <div className="p-3 rounded-lg bg-[#FAF9F5] dark:bg-[#1A1918] border border-[#E8E2D7] dark:border-[#33302B]">
-                  <div className="text-[11px] font-semibold text-[#8E8980] uppercase">Interactive Engine</div>
-                  <div className="font-semibold text-[#1F1D1A] dark:text-[#EDEAE4] mt-0.5">Astrolabe Artifacts v2</div>
+                <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                  <div className="text-[11px] font-semibold text-zinc-500 uppercase">Interactive Engine</div>
+                  <div className="font-semibold text-zinc-900 dark:text-zinc-100 mt-0.5">Astrolabe Artifacts v2</div>
                 </div>
-                <div className="p-3 rounded-lg bg-[#FAF9F5] dark:bg-[#1A1918] border border-[#E8E2D7] dark:border-[#33302B]">
-                  <div className="text-[11px] font-semibold text-[#8E8980] uppercase">Reasoning Backend</div>
-                  <div className="font-semibold text-[#1F1D1A] dark:text-[#EDEAE4] mt-0.5">Gemini 3.8 Flash (Server)</div>
+                <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                  <div className="text-[11px] font-semibold text-zinc-500 uppercase">Reasoning Backend</div>
+                  <div className="font-semibold text-zinc-900 dark:text-zinc-100 mt-0.5">Gemini 3.1 Flash (Server)</div>
                 </div>
               </div>
             </div>
@@ -315,18 +315,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#E8E2D7] dark:border-[#2F2D2A] bg-[#FAF9F5] dark:bg-[#181817]">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl border border-[#DED7CB] dark:border-[#383531] text-xs font-medium text-[#635F59] dark:text-[#A8A39A] hover:bg-[#F2ECE3] dark:hover:bg-[#2B2926] cursor-pointer"
+            className="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleSave}
-            className="px-5 py-2 rounded-xl bg-[#D95D39] hover:bg-[#C44F2C] text-white text-xs font-semibold shadow-xs cursor-pointer"
+            className="px-5 py-2 rounded-xl bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-xs font-semibold shadow-xs cursor-pointer"
           >
             Save Preferences
           </button>

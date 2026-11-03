@@ -242,17 +242,17 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4 pb-4">
-      {/* Container Box styled in Claude's signature floating capsule */}
+      {/* Container Box styled in ChatGPT / Claude minimalist floating container */}
       <div
-        className={`relative rounded-2xl bg-white dark:bg-[#232220] border transition-all shadow-lg shadow-black/5 ${
+        className={`relative rounded-2xl bg-white dark:bg-[#18181B] border transition-all shadow-lg shadow-black/5 ${
           isListening
             ? 'border-red-500 ring-2 ring-red-500/20'
-            : 'border-[#E2DCD2] dark:border-[#383531] focus-within:border-[#D95D39]/50 focus-within:ring-2 focus-within:ring-[#D95D39]/15'
+            : 'border-zinc-200 dark:border-zinc-800 focus-within:border-zinc-950 dark:focus-within:border-zinc-300 focus-within:ring-2 focus-within:ring-zinc-900/10 dark:focus-within:ring-white/10'
         }`}
       >
         {/* Voice Error Banner */}
         {voiceError && (
-          <div className="flex items-center justify-between px-4 py-2 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900/50 rounded-t-2xl text-xs text-amber-800 dark:text-amber-300">
+          <div className="flex items-center justify-between px-4 py-2 bg-zinc-100 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 rounded-t-2xl text-xs text-zinc-800 dark:text-zinc-200">
             <span>{voiceError}</span>
             <button
               type="button"
@@ -293,7 +293,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             {attachments.map((att) => (
               <div
                 key={att.id}
-                className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-[#FAF6EE] dark:bg-[#2C2A27] border border-[#E8E2D7] dark:border-[#383531] text-xs text-[#1F1D1A] dark:text-[#EDEAE4]"
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs text-zinc-900 dark:text-zinc-100"
               >
                 {att.base64 ? (
                   <img
@@ -302,14 +302,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     className="w-5 h-5 rounded object-cover"
                   />
                 ) : (
-                  <FileText className="w-4 h-4 text-[#D95D39]" />
+                  <FileText className="w-4 h-4 text-zinc-600 dark:text-zinc-300" />
                 )}
                 <span className="truncate max-w-[120px] font-medium text-[11px]">
                   {att.name}
                 </span>
                 <button
                   onClick={() => removeAttachment(att.id)}
-                  className="p-0.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-[#8E8980] hover:text-[#1F1D1A] cursor-pointer"
+                  className="p-0.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -326,12 +326,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           onKeyDown={handleKeyDown}
           placeholder={isListening ? 'Speak now, your speech will appear here...' : placeholder}
           rows={1}
-          className="w-full px-4 pt-3.5 pb-2 text-[15px] bg-transparent text-[#1F1D1A] dark:text-[#EDEAE4] placeholder-[#8E8980] outline-none resize-none leading-relaxed"
+          className="w-full px-4 pt-3.5 pb-2 text-[15px] bg-transparent text-zinc-950 dark:text-zinc-50 placeholder-zinc-400 dark:placeholder-zinc-500 outline-none resize-none leading-relaxed"
           style={{ minHeight: '52px' }}
         />
 
-        {/* Bottom Control Bar - Claude.ai layout */}
-        <div className="flex items-center justify-between px-3 py-2 border-t border-[#F2ECE3] dark:border-[#2C2A28]">
+        {/* Bottom Control Bar */}
+        <div className="flex items-center justify-between px-3 py-2 border-t border-zinc-100 dark:border-zinc-800/80">
           {/* Left Controls: File Attachment, Artifacts Builder, Video Studio, Thinking, Prompt Enhancer */}
           <div className="flex items-center gap-1.5 flex-wrap">
             <input
@@ -345,7 +345,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="p-2 rounded-xl text-[#635F59] dark:text-[#A8A39A] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2926] hover:text-[#1F1D1A] dark:hover:text-[#EDEAE4] transition-colors cursor-pointer"
+              className="p-2 rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-950 dark:hover:text-zinc-100 transition-colors cursor-pointer"
               title="Attach documents, images, or code"
             >
               <Paperclip className="w-4 h-4" />
@@ -363,10 +363,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   );
                 }
               }}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium text-[#635F59] dark:text-[#A8A39A] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2926] hover:text-[#D95D39] transition-all cursor-pointer"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-950 dark:hover:text-white transition-all cursor-pointer"
               title="Build interactive websites, games, software, and apps with live preview"
             >
-              <Code2 className="w-3.5 h-3.5 text-[#D95D39]" />
+              <Code2 className="w-3.5 h-3.5 text-zinc-900 dark:text-zinc-100" />
               <span className="hidden sm:inline">Artifacts</span>
             </button>
 
@@ -382,10 +382,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   );
                 }
               }}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium text-[#635F59] dark:text-[#A8A39A] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2926] hover:text-blue-600 dark:hover:text-blue-400 transition-all cursor-pointer"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-950 dark:hover:text-white transition-all cursor-pointer"
               title="Create cinematic AI video storyboards and production prompts"
             >
-              <Film className="w-3.5 h-3.5 text-blue-500" />
+              <Film className="w-3.5 h-3.5 text-zinc-900 dark:text-zinc-100" />
               <span className="hidden sm:inline">Video Studio</span>
             </button>
 
@@ -395,12 +395,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               onClick={onToggleThinking}
               className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                 enableThinking
-                  ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 ring-1 ring-purple-300 dark:ring-purple-700/50'
-                  : 'text-[#736E65] dark:text-[#9E9990] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2926]'
+                  ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 ring-1 ring-zinc-700'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
               }`}
               title="Toggle extended analytical thinking"
             >
-              <Brain className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+              <Brain className="w-3.5 h-3.5" />
               <span className="hidden md:inline">Thinking</span>
             </button>
 
@@ -410,13 +410,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 type="button"
                 onClick={handleEnhancePrompt}
                 disabled={isEnhancing}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 text-xs font-medium hover:bg-amber-100 transition-all cursor-pointer disabled:opacity-50"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 text-xs font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all cursor-pointer disabled:opacity-50"
                 title="Automatically improve and expand your prompt"
               >
                 {isEnhancing ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
                 ) : (
-                  <Sparkles className="w-3 h-3 text-amber-500" />
+                  <Sparkles className="w-3 h-3 text-zinc-700 dark:text-zinc-300" />
                 )}
                 <span className="hidden lg:inline">Enhance</span>
               </button>
@@ -426,26 +426,26 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           {/* Right Controls: Word count, Voice Microphone (adjacent to Send), and Send / Stop button */}
           <div className="flex items-center gap-1.5">
             {wordCount > 0 && (
-              <span className="hidden sm:inline text-[11px] text-[#8E8980] font-mono-castle pr-1">
+              <span className="hidden sm:inline text-[11px] text-zinc-400 font-mono pr-1">
                 {wordCount} {wordCount === 1 ? 'word' : 'words'}
               </span>
             )}
 
-            {/* Voice Input Microphone Button - Directly adjacent to Send (Claude.ai position) */}
+            {/* Voice Input Microphone Button - Directly adjacent to Send */}
             <button
               type="button"
               onClick={toggleVoiceInput}
               className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all cursor-pointer ${
                 isListening
                   ? 'bg-red-500 text-white animate-pulse shadow-md ring-2 ring-red-400'
-                  : 'text-[#635F59] dark:text-[#A8A39A] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2926] hover:text-[#D95D39]'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-950 dark:hover:text-zinc-100'
               }`}
               title={isListening ? 'Click to stop listening' : 'Dictate with voice prompt (বাংলা বা ইংরেজিতে কথা বলুন)'}
             >
               {isListening ? (
                 <MicOff className="w-4 h-4 text-white" />
               ) : (
-                <Mic className="w-4 h-4 text-[#D95D39]" />
+                <Mic className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
               )}
             </button>
 
@@ -454,7 +454,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               <button
                 type="button"
                 onClick={onStopStreaming}
-                className="flex items-center justify-center w-8 h-8 rounded-xl bg-[#1F1D1A] text-white hover:bg-[#33302B] transition-colors cursor-pointer"
+                className="flex items-center justify-center w-8 h-8 rounded-xl bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors cursor-pointer"
                 title="Stop generation"
               >
                 <Square className="w-3.5 h-3.5 fill-current" />
@@ -466,8 +466,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 disabled={!input.trim() && attachments.length === 0}
                 className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all cursor-pointer ${
                   input.trim() || attachments.length > 0
-                    ? 'bg-[#D95D39] text-white shadow-xs hover:bg-[#C44F2C]'
-                    : 'bg-[#EAE4D9] dark:bg-[#2F2D2A] text-[#8E8980] cursor-not-allowed'
+                    ? 'bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 shadow-xs hover:bg-zinc-800 dark:hover:bg-zinc-200'
+                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed'
                 }`}
                 title="Send message (Enter)"
               >

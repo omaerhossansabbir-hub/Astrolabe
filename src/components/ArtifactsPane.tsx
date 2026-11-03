@@ -120,10 +120,10 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
       }`}
     >
       {/* Top Navigation Bar */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#E8E2D7] dark:border-[#302E2B] bg-[#FAF9F5] dark:bg-[#181817]">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
         {/* Artifact Metadata */}
         <div className="flex items-center gap-2.5 min-w-0 pr-2">
-          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#D95D39]/10 text-[#D95D39] shrink-0">
+          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-white shrink-0">
             {artifact.language === 'svg' ? (
               <Layers className="w-4 h-4" />
             ) : artifact.language === 'mermaid' ? (
@@ -133,11 +133,11 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
             )}
           </div>
           <div className="min-w-0">
-            <h2 className="text-sm font-semibold text-[#1F1D1A] dark:text-[#EDEAE4] truncate">
+            <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-100 truncate">
               {artifact.title || 'Astrolabe Artifact'}
             </h2>
-            <div className="flex items-center gap-2 text-[11px] text-[#8E8980]">
-              <span className="uppercase font-mono-castle tracking-wider font-semibold text-[#D95D39]">
+            <div className="flex items-center gap-2 text-[11px] text-zinc-500">
+              <span className="uppercase font-mono tracking-wider font-semibold text-zinc-900 dark:text-zinc-100">
                 {artifact.language}
               </span>
               <span>•</span>
@@ -275,8 +275,8 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
               onClick={() => setDeviceView('desktop')}
               className={`p-1 rounded cursor-pointer ${
                 deviceView === 'desktop'
-                  ? 'bg-white dark:bg-[#262523] text-[#D95D39] shadow-xs'
-                  : 'hover:text-[#1F1D1A]'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-xs'
+                  : 'hover:text-zinc-900 dark:hover:text-zinc-100 text-zinc-400'
               }`}
               title="Desktop view (100%)"
             >
@@ -286,8 +286,8 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
               onClick={() => setDeviceView('tablet')}
               className={`p-1 rounded cursor-pointer ${
                 deviceView === 'tablet'
-                  ? 'bg-white dark:bg-[#262523] text-[#D95D39] shadow-xs'
-                  : 'hover:text-[#1F1D1A]'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-xs'
+                  : 'hover:text-zinc-900 dark:hover:text-zinc-100 text-zinc-400'
               }`}
               title="Tablet view (768px)"
             >
@@ -297,8 +297,8 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
               onClick={() => setDeviceView('mobile')}
               className={`p-1 rounded cursor-pointer ${
                 deviceView === 'mobile'
-                  ? 'bg-white dark:bg-[#262523] text-[#D95D39] shadow-xs'
-                  : 'hover:text-[#1F1D1A]'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-xs'
+                  : 'hover:text-zinc-900 dark:hover:text-zinc-100 text-zinc-400'
               }`}
               title="Mobile view (375px)"
             >
@@ -309,11 +309,11 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 relative overflow-hidden bg-[#FAF9F5] dark:bg-[#141413]">
+      <div className="flex-1 relative overflow-hidden bg-zinc-100 dark:bg-zinc-950">
         {activeTab === 'preview' ? (
           <div className="w-full h-full flex items-center justify-center p-2 lg:p-4 overflow-auto">
             <div
-              className={`h-full transition-all duration-200 bg-white dark:bg-[#1B1B19] rounded-xl overflow-hidden border border-[#E8E2D7] dark:border-[#33302B] shadow-sm ${
+              className={`h-full transition-all duration-200 bg-white dark:bg-zinc-900 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-sm ${
                 deviceView === 'desktop'
                   ? 'w-full'
                   : deviceView === 'tablet'
@@ -332,10 +332,10 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
           </div>
         ) : (
           /* Live Interactive Code Editor View */
-          <div className="w-full h-full flex flex-col bg-[#1A1918] text-[#EDEAE4] font-mono-castle text-[13px]">
-            <div className="flex items-center justify-between px-4 py-2 bg-[#252422] border-b border-[#33302B] text-xs text-[#8E8980]">
+          <div className="w-full h-full flex flex-col bg-zinc-950 text-zinc-100 font-mono text-[13px]">
+            <div className="flex items-center justify-between px-4 py-2 bg-zinc-900 border-b border-zinc-800 text-xs text-zinc-400">
               <span className="flex items-center gap-1.5 text-[11px]">
-                <FileCode className="w-3.5 h-3.5 text-[#D95D39]" />
+                <FileCode className="w-3.5 h-3.5 text-zinc-300" />
                 Interactive Code Editor (Directly edit and click Run)
               </span>
 

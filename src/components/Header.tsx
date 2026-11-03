@@ -62,13 +62,13 @@ export const Header: React.FC<HeaderProps> = ({
   const getModelIcon = (id: AstrolabeModel) => {
     switch (id) {
       case 'astrolabe-thinking':
-        return <Brain className="w-4 h-4 text-purple-500" />;
+        return <Brain className="w-4 h-4 text-zinc-900 dark:text-zinc-100" />;
       case 'astrolabe-3-opus':
-        return <Crown className="w-4 h-4 text-amber-500" />;
+        return <Crown className="w-4 h-4 text-zinc-900 dark:text-zinc-100" />;
       case 'astrolabe-3-haiku':
-        return <Zap className="w-4 h-4 text-emerald-500" />;
+        return <Zap className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />;
       default:
-        return <Sparkles className="w-4 h-4 text-[#D95D39]" />;
+        return <Sparkles className="w-4 h-4 text-zinc-900 dark:text-zinc-100" />;
     }
   };
 
@@ -80,25 +80,25 @@ export const Header: React.FC<HeaderProps> = ({
   ];
 
   return (
-    <header className="relative flex items-center justify-between h-14 px-4 bg-[#FAF9F5] dark:bg-[#1C1B1A] border-b border-[#E8E2D7] dark:border-[#2C2A27] shrink-0 z-20">
+    <header className="relative flex items-center justify-between h-14 px-4 bg-white dark:bg-[#09090B] border-b border-zinc-200 dark:border-zinc-800/80 shrink-0 z-20">
       {/* Left: Sidebar toggle & Title */}
       <div className="flex items-center gap-3 min-w-0">
         <button
           onClick={onToggleSidebar}
-          className="p-2 -ml-2 rounded-lg text-[#635F59] dark:text-[#A8A39A] hover:bg-[#EFECE5] dark:hover:bg-[#282725] transition-colors cursor-pointer"
+          className="p-2 -ml-2 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
           title="Toggle Sidebar"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         <div className="flex items-center gap-2 min-w-0">
-          <span className="font-semibold text-sm text-[#1F1D1A] dark:text-[#EDEAE4] truncate max-w-[180px] sm:max-w-[300px]">
+          <span className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 truncate max-w-[180px] sm:max-w-[300px]">
             {chatTitle || 'New chat'}
           </span>
 
           {activeProject && (
-            <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#EAE4D9] dark:bg-[#292825] text-xs text-[#635F59] dark:text-[#A8A39A] border border-[#E0D9CC] dark:border-[#383531]">
-              <FolderOpen className="w-3 h-3 text-[#D95D39]" />
+            <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-xs text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+              <FolderOpen className="w-3 h-3 text-zinc-900 dark:text-zinc-100" />
               <span className="truncate max-w-[120px]">{activeProject.name}</span>
             </div>
           )}
@@ -111,7 +111,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="relative hidden md:block" ref={styleDropdownRef}>
           <button
             onClick={() => setStyleDropdownOpen(!styleDropdownOpen)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-transparent hover:bg-[#F0EBE1] dark:hover:bg-[#282725] border border-transparent hover:border-[#E2DCD2] dark:hover:border-[#363430] text-xs text-[#635F59] dark:text-[#A8A39A] transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 text-xs text-zinc-600 dark:text-zinc-400 transition-all cursor-pointer"
             title="Response Style"
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -119,8 +119,8 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           {styleDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-[#232220] border border-[#E2DCD2] dark:border-[#363430] shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-              <div className="px-2.5 py-1 text-[11px] font-semibold text-[#8E8980] uppercase tracking-wider">
+            <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="px-2.5 py-1 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                 Claude Response Style
               </div>
               <div className="space-y-1 mt-1">
@@ -133,12 +133,12 @@ export const Header: React.FC<HeaderProps> = ({
                     }}
                     className={`w-full text-left p-2 rounded-xl text-xs transition-colors cursor-pointer ${
                       responseStyle === st.id
-                        ? 'bg-[#FAF6EE] dark:bg-[#2C2A27] font-semibold text-[#D95D39]'
-                        : 'hover:bg-[#F7F4EE] dark:hover:bg-[#262523] text-[#1F1D1A] dark:text-[#EDEAE4]'
+                        ? 'bg-zinc-100 dark:bg-zinc-800 font-semibold text-zinc-950 dark:text-white'
+                        : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/60 text-zinc-800 dark:text-zinc-200'
                     }`}
                   >
                     <div>{st.label}</div>
-                    <div className="text-[11px] font-normal text-[#8E8980] mt-0.5">{st.desc}</div>
+                    <div className="text-[11px] font-normal text-zinc-500 mt-0.5">{st.desc}</div>
                   </button>
                 ))}
               </div>
@@ -150,19 +150,19 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="relative" ref={modelDropdownRef}>
           <button
             onClick={() => setModelDropdownOpen(!modelDropdownOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-[#242321] hover:bg-[#F6F3ED] dark:hover:bg-[#2C2A28] border border-[#E2DCD2] dark:border-[#363430] text-xs font-medium text-[#1F1D1A] dark:text-[#EDEAE4] shadow-2xs transition-all cursor-pointer"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-xs font-medium text-zinc-900 dark:text-zinc-100 shadow-2xs transition-all cursor-pointer"
           >
             {getModelIcon(currentModelInfo.id)}
             <span className="font-semibold hidden sm:inline">{currentModelInfo.name}</span>
             <span className="font-semibold sm:hidden">
               {currentModelInfo.id === 'astrolabe-thinking' ? 'Thinking' : 'Sonnet'}
             </span>
-            <ChevronDown className="w-3.5 h-3.5 text-[#8E8980]" />
+            <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
           </button>
 
           {modelDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-72 sm:w-80 rounded-2xl bg-white dark:bg-[#232220] border border-[#E2DCD2] dark:border-[#363430] shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-              <div className="px-2.5 py-1.5 text-[11px] font-semibold text-[#8E8980] uppercase tracking-wider">
+            <div className="absolute right-0 mt-2 w-72 sm:w-80 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="px-2.5 py-1.5 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                 Astrolabe Intelligence Models
               </div>
 
@@ -178,23 +178,23 @@ export const Header: React.FC<HeaderProps> = ({
                       }}
                       className={`w-full flex items-start gap-3 p-2.5 rounded-xl text-left transition-colors cursor-pointer ${
                         isSelected
-                          ? 'bg-[#FAF6F0] dark:bg-[#2C2A27] ring-1 ring-[#D95D39]/30'
-                          : 'hover:bg-[#F7F4EE] dark:hover:bg-[#262523]'
+                          ? 'bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-300 dark:ring-zinc-600'
+                          : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/60'
                       }`}
                     >
                       <div className="mt-0.5">{getModelIcon(m.id)}</div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-xs text-[#1F1D1A] dark:text-[#EDEAE4]">
+                          <span className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">
                             {m.name}
                           </span>
                           {m.badge && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#D95D39]/10 text-[#D95D39] font-medium">
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-medium">
                               {m.badge}
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-[#736E65] dark:text-[#9E9990] mt-0.5 line-clamp-2">
+                        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-2">
                           {m.description}
                         </p>
                       </div>
@@ -212,8 +212,8 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onToggleArtifacts}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               isArtifactsOpen
-                ? 'bg-[#D95D39] text-white shadow-xs'
-                : 'bg-white dark:bg-[#242321] hover:bg-[#F6F3ED] dark:hover:bg-[#2C2A28] border border-[#E2DCD2] dark:border-[#363430] text-[#1F1D1A] dark:text-[#EDEAE4]'
+                ? 'bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 shadow-xs'
+                : 'bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100'
             }`}
             title="Toggle interactive Artifacts side panel"
           >

@@ -68,12 +68,12 @@ export const MarkdownView: React.FC<MarkdownViewProps> = ({
           return (
             <div
               key={idx}
-              className="my-3 overflow-hidden rounded-xl border border-[#E8E2D7] dark:border-[#33302B] bg-[#1E1E1E] text-[#EDEAE4] shadow-sm font-mono-castle"
+              className="my-3 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-[#121215] text-zinc-100 shadow-xs font-mono-castle"
             >
               {/* Code block header */}
-              <div className="flex items-center justify-between px-4 py-2 bg-[#282725] border-b border-[#383633] text-xs text-[#A8A39A]">
+              <div className="flex items-center justify-between px-4 py-2 bg-zinc-900 border-b border-zinc-800 text-xs text-zinc-400">
                 <div className="flex items-center gap-2">
-                  <Code2 className="w-3.5 h-3.5 text-[#D95D39]" />
+                  <Code2 className="w-3.5 h-3.5 text-zinc-300" />
                   <span className="font-semibold uppercase tracking-wider text-[11px]">
                     {sec.language || 'code'}
                   </span>
@@ -83,7 +83,7 @@ export const MarkdownView: React.FC<MarkdownViewProps> = ({
                   {isInteractive && onCodeArtifactClick && (
                     <button
                       onClick={() => onCodeArtifactClick(sec.text, sec.language || 'html')}
-                      className="text-[11px] px-2 py-0.5 rounded bg-[#D95D39]/20 text-[#E8734A] hover:bg-[#D95D39]/30 transition-colors cursor-pointer"
+                      className="text-[11px] px-2.5 py-0.5 rounded-md bg-white text-zinc-950 hover:bg-zinc-200 font-medium transition-colors cursor-pointer"
                     >
                       Open in Artifacts
                     </button>

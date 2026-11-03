@@ -29,27 +29,27 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const PROMPT_CARDS = [
     {
       category: 'Interactive Artifact',
-      icon: <Terminal className="w-4 h-4 text-[#D95D39]" />,
+      icon: <Terminal className="w-4 h-4 text-zinc-900 dark:text-zinc-100" />,
       title: 'Build a Retro Space Shooter Game in HTML5 Canvas',
       prompt: 'Write a complete, playable retro arcade space shooter mini-game in HTML5 Canvas with keyboard controls, sound synthesis, and score tracking as an interactive Astrolabe Artifact.',
     },
     {
       category: 'বাংলা সাহিত্য ও দর্শন',
-      icon: <BookOpen className="w-4 h-4 text-emerald-600" />,
+      icon: <BookOpen className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />,
       title: 'বাংলায় আধুনিক জীবনের একাকিত্ব নিয়ে একটি দার্শনিক কবিতা ও প্রবন্ধ',
       prompt: 'বাংলায় আধুনিক নাগরিক জীবনের ব্যস্ততা ও মানুষের ভেতরের আত্মিক একাকিত্ব নিয়ে একটি গভীর ভাবগম্ভীর কবিতা এবং সাথে একটি দার্শনিক বিশ্লেষণ লেখো।',
     },
     {
       category: 'UI & Dashboard',
-      icon: <Layout className="w-4 h-4 text-indigo-600" />,
+      icon: <Layout className="w-4 h-4 text-zinc-800 dark:text-zinc-200" />,
       title: 'Create an Interactive SaaS Analytics Dashboard',
       prompt: 'Create a modern, interactive SaaS metrics dashboard in HTML and Tailwind CSS with metric cards, chart filter tabs, and animated SVG trend lines as an Astrolabe Artifact.',
     },
     {
       category: 'Celestial Vector Art',
-      icon: <Compass className="w-4 h-4 text-amber-600" />,
+      icon: <Compass className="w-4 h-4 text-zinc-800 dark:text-zinc-200" />,
       title: 'Generate an Intricate Golden Astrolabe Under Moonlight',
-      prompt: 'Generate an intricate, scalable SVG artwork of a golden celestial astrolabe with constellation markings, lunar phases, and starry twilight night sky as an Astrolabe Artifact.',
+      prompt: 'Generate an intricate, scalable SVG artwork of a celestial astrolabe with constellation markings, lunar phases, and starry twilight night sky as an Astrolabe Artifact.',
     },
   ];
 
@@ -59,11 +59,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       <div className="flex flex-col items-center mb-8">
         <AstrolabeLogo size={52} />
 
-        <h1 className="mt-5 font-serif-castle text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-[#1F1D1A] dark:text-[#EDEAE4]">
+        <h1 className="mt-5 text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
           {getGreeting()}, {userName}
         </h1>
 
-        <p className="mt-2 text-sm sm:text-base text-[#736E65] dark:text-[#9E9990] max-w-md font-sans">
+        <p className="mt-2 text-sm sm:text-base text-zinc-500 dark:text-zinc-400 max-w-md font-sans">
           How can Astrolabe navigate your ideas, code, or writing today?
         </p>
       </div>
@@ -74,21 +74,21 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           <button
             key={idx}
             onClick={() => onSelectPrompt(card.prompt)}
-            className="group p-4 rounded-2xl bg-white dark:bg-[#232220] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2926] border border-[#E8E2D7] dark:border-[#33302B] shadow-2xs hover:shadow-xs transition-all duration-200 cursor-pointer flex flex-col justify-between"
+            className="group p-4 rounded-2xl bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-900 dark:hover:border-zinc-600 shadow-2xs hover:shadow-xs transition-all duration-200 cursor-pointer flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-[#8E8980] uppercase tracking-wider">
+                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                   {card.icon}
                   {card.category}
                 </span>
-                <ArrowRight className="w-3.5 h-3.5 text-[#D95D39] opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all" />
+                <ArrowRight className="w-3.5 h-3.5 text-zinc-950 dark:text-white opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all" />
               </div>
-              <h3 className="text-xs sm:text-sm font-medium text-[#1F1D1A] dark:text-[#EDEAE4] line-clamp-2 leading-snug">
+              <h3 className="text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100 line-clamp-2 leading-snug">
                 {card.title}
               </h3>
             </div>
-            <div className="mt-2.5 text-[11px] text-[#8E8980] line-clamp-1">
+            <div className="mt-2.5 text-[11px] text-zinc-400 line-clamp-1">
               Click to run with Astrolabe
             </div>
           </button>
