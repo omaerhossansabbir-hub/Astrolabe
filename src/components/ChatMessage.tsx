@@ -15,7 +15,7 @@ import {
   Layers,
   FileText,
   AlertCircle,
-  Sparkles,
+  Globe,
   Loader2,
 } from 'lucide-react';
 import { Message, AstrolabeArtifact } from '../types';
@@ -26,7 +26,6 @@ interface ChatMessageProps {
   message: Message;
   onOpenArtifact: (artifact: AstrolabeArtifact) => void;
   onRetry?: () => void;
-  onEdit?: (newContent: string) => void;
 }
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({
@@ -44,7 +43,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const isStreaming = message.status === 'streaming';
   const isError = message.status === 'error';
 
-  // Live timer for immediate feedback while Astrolabe is generating
   useEffect(() => {
     if (!isStreaming) {
       setElapsedSeconds(0);
@@ -74,7 +72,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       const textToSpeak = message.content
         .replace(/```[\s\S]*?```/g, 'Code block omitted.')
         .replace(/<[^>]*>/g, '')
-        .slice(0, 1000);
+        .slice(0, 1500);
 
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utterance.onend = () => setIsSpeaking(false);
@@ -86,14 +84,14 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
   if (isUser) {
     return (
-      <div className="flex justify-end my-4 px-4 sm:px-6">
-        <div className="max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-zinc-50 text-[15px] shadow-2xs leading-relaxed border border-zinc-200/60 dark:border-zinc-700/60">
+      <div className="flex justify-end my-4 px-4 sm:px-6 max-w-4xl mx-auto w-full">
+        <div className="max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-zinc-50 text-[15px] leading-relaxed border border-zinc-200/80 dark:border-zinc-700/60">
           {message.attachments && message.attachments.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-2">
               {message.attachments.map((att) => (
                 <div
                   key={att.id}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/70 dark:bg-black/30 text-xs text-zinc-600 dark:text-zinc-300 border border-black/5"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 text-xs text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700"
                 >
                   {att.base64 ? (
                     <img
@@ -116,28 +114,27 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     );
   }
 
-  // Assistant (Astrolabe) message
   return (
     <div className="flex gap-3 sm:gap-4 my-6 px-4 sm:px-6 max-w-4xl mx-auto w-full group">
-      {/* Astrolabe Avatar */}
+      {/* Pure Black & White Astrolabe Avatar */}
       <div className="shrink-0 mt-0.5">
         <AstrolabeLogo size={28} />
       </div>
 
       <div className="flex-1 min-w-0 space-y-3">
-        {/* Thinking Accordion (Extended reasoning) */}
+        {/* Thinking Accordion */}
         {message.thinking && (
           <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 overflow-hidden text-xs">
             <button
               onClick={() => setThinkingExpanded(!thinkingExpanded)}
-              className="w-full flex items-center justify-between px-3.5 py-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 transition-colors cursor-pointer"
+              className="w-full flex items-center justify-between px-3.5 py-2 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-2">
-                <Brain className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300" />
-                <span className="font-semibold">Astrolabe Thinking Process</span>
+                <Brain className="w-3.5 h-3.5 text-zinc-800 dark:text-zinc-200" />
+                <span className="font-semibold">Reasoning Process</span>
                 {message.thinkingTime && (
                   <span className="text-[11px] text-zinc-400">
-                    • Thought for {message.thinkingTime.toFixed(1)}s
+                    • {message.thinkingTime.toFixed(1)}s
                   </span>
                 )}
               </div>
@@ -149,7 +146,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             </button>
 
             {thinkingExpanded && (
-              <div className="px-3.5 pb-3 pt-1 text-[12px] text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap font-mono border-t border-zinc-200 dark:border-zinc-800 leading-relaxed max-h-60 overflow-y-auto">
+              <div className="px-3.5 pb-3 pt-1 text-[12px] text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap font-mono-astrolabe border-t border-zinc-200 dark:border-zinc-800 leading-relaxed max-h-60 overflow-y-auto">
                 {message.thinking}
               </div>
             )}
@@ -160,10 +157,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         {message.artifact && (
           <div
             onClick={() => onOpenArtifact(message.artifact!)}
-            className="group/card flex items-center justify-between p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-950 dark:hover:border-zinc-500 shadow-xs hover:shadow-sm transition-all cursor-pointer"
+            className="group/card flex items-center justify-between p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-black dark:hover:border-zinc-500 shadow-2xs transition-all cursor-pointer"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-white shrink-0 group-hover/card:scale-105 transition-transform">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white shrink-0">
                 {message.artifact.language === 'svg' ? (
                   <Layers className="w-5 h-5" />
                 ) : (
@@ -173,58 +170,48 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <h4 className="text-sm font-semibold text-zinc-950 dark:text-zinc-100 truncate">
+                  <h4 className="text-sm font-semibold text-zinc-950 dark:text-white truncate">
                     {message.artifact.title}
                   </h4>
-                  <span className="uppercase text-[10px] font-mono font-semibold px-1.5 py-0.2 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700">
+                  <span className="uppercase text-[10px] font-mono-astrolabe font-semibold px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700">
                     {message.artifact.language}
                   </span>
                 </div>
                 <p className="text-[12px] text-zinc-500 dark:text-zinc-400 mt-0.5 truncate">
-                  Click to open interactive preview & source code in Astrolabe Artifacts viewer
+                  Click to open interactive preview & code
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-950 dark:text-white pl-3 shrink-0">
-              <span className="hidden sm:inline">Open Artifact</span>
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-black dark:text-white pl-3 shrink-0">
+              <span className="hidden sm:inline">Open</span>
               <ExternalLink className="w-4 h-4 group-hover/card:translate-x-0.5 transition-transform" />
             </div>
           </div>
         )}
 
-        {/* Instant Animated Feedback while Waiting for First Words */}
+        {/* Streaming Loading Indicator */}
         {isStreaming && !message.content && (
-          <div className="flex items-center gap-3 p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 animate-pulse">
-            <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100">
-              <Loader2 className="w-4 h-4 animate-spin" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                  অ্যাস্ট্রো ল্যাব উত্তর সাজাচ্ছে...
-                </span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-mono font-medium">
-                  {elapsedSeconds.toFixed(1)}s
-                </span>
-              </div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 flex items-center gap-1.5">
-                <Sparkles className="w-3 h-3 text-zinc-700 dark:text-zinc-300" />
-                উচ্চগতির ইঞ্জিন দ্বারা বিশ্লেষণ চলছে (Analyzing prompt with instant stream)
-              </p>
-            </div>
+          <div className="flex items-center gap-3 py-2 text-xs text-zinc-500 dark:text-zinc-400">
+            <Loader2 className="w-4 h-4 animate-spin text-black dark:text-white" />
+            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+              Astrolabe AI is thinking...
+            </span>
+            <span className="font-mono-astrolabe text-[11px] text-zinc-400">
+              {elapsedSeconds.toFixed(1)}s
+            </span>
           </div>
         )}
 
         {/* Message Markdown Body */}
-        {message.content && (
+        {message.content && !isError && (
           <div className="text-[15px] leading-relaxed text-zinc-950 dark:text-zinc-100">
             <MarkdownView
               content={message.content}
               onCodeArtifactClick={(code, lang) => {
                 const art: AstrolabeArtifact = {
                   id: `art-block-${Date.now()}`,
-                  title: 'Extracted Code Artifact',
+                  title: 'Code Artifact',
                   type: 'application/vnd.astrolabe.code',
                   language: lang,
                   content: code,
@@ -236,35 +223,52 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             />
 
             {isStreaming && (
-              <span className="inline-block w-2 h-4 ml-1 bg-zinc-950 dark:bg-white animate-pulse align-middle" />
+              <span className="inline-block w-2 h-4 ml-1 bg-black dark:bg-white animate-pulse align-middle" />
             )}
+          </div>
+        )}
+
+        {/* Web Grounding Sources */}
+        {!isStreaming && message.sources && message.sources.length > 0 && (
+          <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 space-y-1.5">
+            <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+              <Globe className="w-3 h-3" />
+              <span>Sources</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {message.sources.slice(0, 6).map((src, i) => (
+                <a
+                  key={i}
+                  href={src.uri}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-black dark:hover:border-zinc-500 text-[11px] text-zinc-700 dark:text-zinc-300 max-w-[240px] truncate transition-colors"
+                >
+                  <span className="truncate">{src.title}</span>
+                  <ExternalLink className="w-2.5 h-2.5 shrink-0" />
+                </a>
+              ))}
+            </div>
           </div>
         )}
 
         {/* Error State Banner with Instant Retry */}
         {isError && (
-          <div className="mt-2 p-3.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs">
+          <div className="mt-1 p-3.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs">
             <div className="flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-zinc-700 dark:text-zinc-300 shrink-0 mt-0.5" />
+              <AlertCircle className="w-4 h-4 text-zinc-800 dark:text-zinc-200 shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <p className="text-zinc-800 dark:text-zinc-200 font-medium leading-relaxed">
-                  {message.content || 'সংযোগ বিচ্ছিন্ন হয়েছে বা উত্তর প্রদানে সাময়িক সমস্যা হয়েছে।'}
+                  {message.content || 'Could not complete the response. Please try again.'}
                 </p>
                 {onRetry && (
                   <div className="mt-2.5 flex items-center gap-2">
                     <button
                       onClick={onRetry}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 font-medium text-xs shadow-xs transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black dark:bg-white text-white dark:text-black hover:opacity-85 font-medium text-xs transition-opacity cursor-pointer"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
-                      আবার চেষ্টা করুন (Retry)
-                    </button>
-                    <button
-                      onClick={handleCopy}
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs transition-colors cursor-pointer"
-                    >
-                      {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                      কপি করুন
+                      Retry
                     </button>
                   </div>
                 )}
@@ -273,18 +277,18 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           </div>
         )}
 
-        {/* Actions Toolbar */}
+        {/* Monochrome Actions Toolbar */}
         {!isStreaming && !isError && message.content && (
-          <div className="flex items-center gap-1 pt-1 text-xs text-[#8E8980]">
+          <div className="flex items-center gap-1 pt-1 text-xs text-zinc-500">
             <button
               onClick={handleCopy}
-              className="flex items-center gap-1 p-1.5 rounded-md hover:bg-[#EAE4D9] dark:hover:bg-[#282725] hover:text-[#1F1D1A] dark:hover:text-[#EDEAE4] transition-colors cursor-pointer"
+              className="flex items-center gap-1 p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
               title="Copy response"
             >
               {copied ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-500" />
-                  <span className="text-emerald-500 text-[11px]">Copied</span>
+                  <Check className="w-3.5 h-3.5 text-black dark:text-white" />
+                  <span className="text-black dark:text-white text-[11px]">Copied</span>
                 </>
               ) : (
                 <Copy className="w-3.5 h-3.5" />
@@ -294,7 +298,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             <button
               onClick={handleSpeak}
               className={`p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer ${
-                isSpeaking ? 'text-zinc-950 dark:text-white font-bold' : 'hover:text-zinc-950 dark:hover:text-zinc-100'
+                isSpeaking ? 'text-black dark:text-white font-bold' : 'hover:text-black dark:hover:text-white'
               }`}
               title={isSpeaking ? 'Stop reading' : 'Read aloud'}
             >
@@ -304,7 +308,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             {onRetry && (
               <button
                 onClick={onRetry}
-                className="p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-950 dark:hover:text-zinc-100 transition-colors cursor-pointer"
+                className="p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
                 title="Regenerate response"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -316,7 +320,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             <button
               onClick={() => setFeedback(feedback === 'up' ? null : 'up')}
               className={`p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer ${
-                feedback === 'up' ? 'text-emerald-600' : 'hover:text-zinc-950 dark:hover:text-zinc-100'
+                feedback === 'up' ? 'text-black dark:text-white' : 'hover:text-black dark:hover:text-white'
               }`}
               title="Helpful"
             >
@@ -326,7 +330,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             <button
               onClick={() => setFeedback(feedback === 'down' ? null : 'down')}
               className={`p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer ${
-                feedback === 'down' ? 'text-red-500' : 'hover:text-zinc-950 dark:hover:text-zinc-100'
+                feedback === 'down' ? 'text-black dark:text-white' : 'hover:text-black dark:hover:text-white'
               }`}
               title="Not helpful"
             >

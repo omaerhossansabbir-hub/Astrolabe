@@ -16,7 +16,6 @@ import {
   Layers,
   GitFork,
   Play,
-  Terminal,
   FileCode,
 } from 'lucide-react';
 import { AstrolabeArtifact } from '../types';
@@ -35,13 +34,12 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
   onUpdateArtifact,
   isOpen,
 }) => {
-  const [activeTab, setActiveTab] = useState<'preview' | 'code' | 'console'>('preview');
+  const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview');
   const [copied, setCopied] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [deviceView, setDeviceView] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [iframeKey, setIframeKey] = useState(0);
 
-  // Live code editor state
   const [editableCode, setEditableCode] = useState('');
   const [isModified, setIsModified] = useState(false);
 
@@ -113,7 +111,7 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
 
   return (
     <aside
-      className={`fixed lg:relative inset-y-0 right-0 z-40 flex flex-col bg-[#FFFFFF] dark:bg-[#1E1E1E] border-l border-[#E8E2D7] dark:border-[#302E2B] shadow-2xl lg:shadow-none transition-all duration-300 ease-in-out ${
+      className={`fixed lg:relative inset-y-0 right-0 z-40 flex flex-col bg-white dark:bg-[#0E0E11] border-l border-zinc-200 dark:border-zinc-800 shadow-2xl lg:shadow-none transition-all duration-300 ease-in-out ${
         isFullscreen
           ? 'fixed inset-0 z-50 w-screen h-screen'
           : 'w-full lg:w-[48%] xl:w-[50%] 2xl:w-[52%] h-full'
@@ -121,7 +119,6 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
     >
       {/* Top Navigation Bar */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-        {/* Artifact Metadata */}
         <div className="flex items-center gap-2.5 min-w-0 pr-2">
           <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-white shrink-0">
             {artifact.language === 'svg' ? (
@@ -133,11 +130,11 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
             )}
           </div>
           <div className="min-w-0">
-            <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-100 truncate">
+            <h2 className="text-sm font-semibold text-zinc-950 dark:text-white truncate">
               {artifact.title || 'Astrolabe Artifact'}
             </h2>
             <div className="flex items-center gap-2 text-[11px] text-zinc-500">
-              <span className="uppercase font-mono tracking-wider font-semibold text-zinc-900 dark:text-zinc-100">
+              <span className="uppercase font-mono-astrolabe tracking-wider font-semibold text-zinc-900 dark:text-zinc-100">
                 {artifact.language}
               </span>
               <span>•</span>
@@ -145,20 +142,20 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
               <span>•</span>
               <span>{lines.length} lines</span>
               {isModified && (
-                <span className="text-[10px] text-amber-500 font-semibold">• Edited</span>
+                <span className="text-[10px] text-zinc-900 dark:text-white font-semibold">• Edited</span>
               )}
             </div>
           </div>
         </div>
 
         {/* Center: Preview vs Code segmented control */}
-        <div className="flex items-center bg-[#EFECE6] dark:bg-[#282725] p-0.5 rounded-lg border border-[#E2DCD2] dark:border-[#363430] shrink-0">
+        <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-700 shrink-0">
           <button
             onClick={() => setActiveTab('preview')}
             className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
               activeTab === 'preview'
-                ? 'bg-white dark:bg-[#1E1E1E] text-[#1F1D1A] dark:text-[#EDEAE4] shadow-xs'
-                : 'text-[#635F59] dark:text-[#A8A39A] hover:text-[#1F1D1A]'
+                ? 'bg-white dark:bg-zinc-950 text-black dark:text-white shadow-xs'
+                : 'text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white'
             }`}
           >
             <Eye className="w-3.5 h-3.5" />
@@ -168,12 +165,12 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
             onClick={() => setActiveTab('code')}
             className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
               activeTab === 'code'
-                ? 'bg-white dark:bg-[#1E1E1E] text-[#1F1D1A] dark:text-[#EDEAE4] shadow-xs'
-                : 'text-[#635F59] dark:text-[#A8A39A] hover:text-[#1F1D1A]'
+                ? 'bg-white dark:bg-zinc-950 text-black dark:text-white shadow-xs'
+                : 'text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white'
             }`}
           >
             <FileCode className="w-3.5 h-3.5" />
-            <span>Editor</span>
+            <span>Code</span>
           </button>
         </div>
 
@@ -182,7 +179,7 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
           {isModified && (
             <button
               onClick={handleApplyChanges}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors cursor-pointer shadow-xs"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-black dark:bg-white text-white dark:text-black hover:opacity-90 transition-colors cursor-pointer shadow-xs"
               title="Run and apply modified code"
             >
               <Play className="w-3 h-3 fill-current" />
@@ -193,7 +190,7 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
           {activeTab === 'preview' && (
             <button
               onClick={() => setIframeKey((k) => k + 1)}
-              className="p-1.5 rounded-md text-[#635F59] dark:text-[#A8A39A] hover:bg-[#EFECE6] dark:hover:bg-[#2E2D2A] transition-colors cursor-pointer"
+              className="p-1.5 rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
               title="Reload preview"
             >
               <RotateCcw className="w-4 h-4" />
@@ -202,13 +199,13 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
 
           <button
             onClick={handleCopyCode}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium text-[#635F59] dark:text-[#A8A39A] hover:bg-[#EFECE6] dark:hover:bg-[#2E2D2A] transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
             title="Copy source code"
           >
             {copied ? (
               <>
-                <Check className="w-3.5 h-3.5 text-emerald-500" />
-                <span className="text-emerald-500">Copied</span>
+                <Check className="w-3.5 h-3.5 text-black dark:text-white" />
+                <span className="text-black dark:text-white">Copied</span>
               </>
             ) : (
               <>
@@ -220,7 +217,7 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
 
           <button
             onClick={handleDownload}
-            className="p-1.5 rounded-md text-[#635F59] dark:text-[#A8A39A] hover:bg-[#EFECE6] dark:hover:bg-[#2E2D2A] transition-colors cursor-pointer"
+            className="p-1.5 rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
             title="Download file"
           >
             <Download className="w-4 h-4" />
@@ -228,7 +225,7 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
 
           <button
             onClick={handleOpenRawWindow}
-            className="hidden sm:flex p-1.5 rounded-md text-[#635F59] dark:text-[#A8A39A] hover:bg-[#EFECE6] dark:hover:bg-[#2E2D2A] transition-colors cursor-pointer"
+            className="hidden sm:flex p-1.5 rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
             title="Open preview in new tab"
           >
             <ExternalLink className="w-4 h-4" />
@@ -236,7 +233,7 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
 
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-1.5 rounded-md text-[#635F59] dark:text-[#A8A39A] hover:bg-[#EFECE6] dark:hover:bg-[#2E2D2A] transition-colors cursor-pointer"
+            className="p-1.5 rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
             title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
           >
             {isFullscreen ? (
@@ -246,11 +243,11 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
             )}
           </button>
 
-          <div className="w-[1px] h-4 bg-[#E2DCD2] dark:bg-[#363430] mx-1" />
+          <div className="w-[1px] h-4 bg-zinc-200 dark:bg-zinc-800 mx-1" />
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-md text-[#635F59] dark:text-[#A8A39A] hover:bg-[#EFECE6] dark:hover:bg-[#2E2D2A] transition-colors cursor-pointer"
+            className="p-1.5 rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
             title="Close Artifacts panel"
           >
             <X className="w-4 h-4" />
@@ -260,13 +257,13 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
 
       {/* Sub-bar for Responsive Viewport switcher */}
       {activeTab === 'preview' && (
-        <div className="flex items-center justify-between px-4 py-1.5 bg-[#F6F3ED] dark:bg-[#151413] border-b border-[#E8E2D7] dark:border-[#2C2A27] text-xs text-[#8E8980]">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-medium text-[#635F59] dark:text-[#A8A39A]">
-              Astrolabe Sandbox:
+        <div className="flex items-center justify-between px-4 py-1.5 bg-zinc-50 dark:bg-zinc-900/60 border-b border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
+              Astrolabe Sandbox
             </span>
-            <span className="text-[11px] px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono-castle">
-              Active
+            <span className="text-[11px] font-mono-astrolabe text-zinc-900 dark:text-zinc-100">
+              • Live
             </span>
           </div>
 
@@ -275,8 +272,8 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
               onClick={() => setDeviceView('desktop')}
               className={`p-1 rounded cursor-pointer ${
                 deviceView === 'desktop'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-xs'
-                  : 'hover:text-zinc-900 dark:hover:text-zinc-100 text-zinc-400'
+                  ? 'bg-white dark:bg-zinc-800 text-black dark:text-white shadow-xs'
+                  : 'hover:text-black dark:hover:text-white text-zinc-400'
               }`}
               title="Desktop view (100%)"
             >
@@ -286,8 +283,8 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
               onClick={() => setDeviceView('tablet')}
               className={`p-1 rounded cursor-pointer ${
                 deviceView === 'tablet'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-xs'
-                  : 'hover:text-zinc-900 dark:hover:text-zinc-100 text-zinc-400'
+                  ? 'bg-white dark:bg-zinc-800 text-black dark:text-white shadow-xs'
+                  : 'hover:text-black dark:hover:text-white text-zinc-400'
               }`}
               title="Tablet view (768px)"
             >
@@ -297,8 +294,8 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
               onClick={() => setDeviceView('mobile')}
               className={`p-1 rounded cursor-pointer ${
                 deviceView === 'mobile'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-xs'
-                  : 'hover:text-zinc-900 dark:hover:text-zinc-100 text-zinc-400'
+                  ? 'bg-white dark:bg-zinc-800 text-black dark:text-white shadow-xs'
+                  : 'hover:text-black dark:hover:text-white text-zinc-400'
               }`}
               title="Mobile view (375px)"
             >
@@ -331,18 +328,17 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
             </div>
           </div>
         ) : (
-          /* Live Interactive Code Editor View */
-          <div className="w-full h-full flex flex-col bg-zinc-950 text-zinc-100 font-mono text-[13px]">
+          <div className="w-full h-full flex flex-col bg-zinc-950 text-zinc-100 font-mono-astrolabe text-[13px]">
             <div className="flex items-center justify-between px-4 py-2 bg-zinc-900 border-b border-zinc-800 text-xs text-zinc-400">
               <span className="flex items-center gap-1.5 text-[11px]">
                 <FileCode className="w-3.5 h-3.5 text-zinc-300" />
-                Interactive Code Editor (Directly edit and click Run)
+                Interactive Code Editor
               </span>
 
               {isModified && (
                 <button
                   onClick={handleApplyChanges}
-                  className="flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs"
+                  className="flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold bg-white text-black hover:bg-zinc-200 cursor-pointer shadow-xs"
                 >
                   <Play className="w-3 h-3 fill-current" />
                   <span>Apply & Run</span>
@@ -351,7 +347,7 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
             </div>
 
             <div className="flex-1 overflow-auto p-4 flex">
-              <div className="select-none text-[#5A5751] text-right pr-4 border-r border-[#2F2D2A] leading-relaxed">
+              <div className="select-none text-zinc-600 text-right pr-4 border-r border-zinc-800 leading-relaxed">
                 {lines.map((_, i) => (
                   <div key={i}>{i + 1}</div>
                 ))}
@@ -364,7 +360,7 @@ export const ArtifactsPane: React.FC<ArtifactsPaneProps> = ({
                   setIsModified(true);
                 }}
                 spellCheck={false}
-                className="flex-1 pl-4 bg-transparent text-[#EDEAE4] outline-none resize-none font-mono-castle leading-relaxed whitespace-pre overflow-x-auto"
+                className="flex-1 pl-4 bg-transparent text-zinc-100 outline-none resize-none font-mono-astrolabe leading-relaxed whitespace-pre overflow-x-auto"
               />
             </div>
           </div>

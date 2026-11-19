@@ -1,6 +1,6 @@
 {
-  "name": "Castle AI",
-  "description": "Castle - Next-generation thoughtful AI companion with interactive Artifacts, Projects, and smart reasoning.",
+  "name": "Astrolabe AI",
+  "description": "Astrolabe AI - Next-generation thoughtful AI companion with interactive Artifacts, Projects, Web Search, and deep reasoning.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

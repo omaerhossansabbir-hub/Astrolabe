@@ -1,4 +1,8 @@
-export type ArtifactType = 'application/vnd.astrolabe.code' | 'image/svg+xml' | 'text/markdown' | 'application/vnd.astrolabe.diagram';
+export type ArtifactType =
+  | 'application/vnd.astrolabe.code'
+  | 'image/svg+xml'
+  | 'text/markdown'
+  | 'application/vnd.astrolabe.diagram';
 
 export interface AstrolabeArtifact {
   id: string;
@@ -10,9 +14,6 @@ export interface AstrolabeArtifact {
   createdAt: number;
 }
 
-// Backward compatibility alias
-export type CastleArtifact = AstrolabeArtifact;
-
 export interface FileAttachment {
   id: string;
   name: string;
@@ -20,6 +21,11 @@ export interface FileAttachment {
   size: number;
   base64?: string;
   text?: string;
+}
+
+export interface GroundingSource {
+  title: string;
+  uri: string;
 }
 
 export interface Message {
@@ -31,6 +37,7 @@ export interface Message {
   thinkingTime?: number;
   attachments?: FileAttachment[];
   artifact?: AstrolabeArtifact;
+  sources?: GroundingSource[];
   status?: 'sending' | 'streaming' | 'done' | 'error';
 }
 
@@ -64,11 +71,9 @@ export interface ChatSession {
 
 export type AstrolabeModel =
   | 'astrolabe-3.5-sonnet'
+  | 'astrolabe-thinking'
   | 'astrolabe-3-opus'
-  | 'astrolabe-3-haiku'
-  | 'astrolabe-thinking';
-
-export type CastleModel = AstrolabeModel;
+  | 'astrolabe-3-haiku';
 
 export interface ModelInfo {
   id: AstrolabeModel;
@@ -82,32 +87,30 @@ export const ASTROLABE_MODELS: ModelInfo[] = [
   {
     id: 'astrolabe-3.5-sonnet',
     name: 'Astrolabe 3.5 Sonnet',
-    tagline: 'Most intelligent & articulate model',
-    description: 'Ideal for complex reasoning, rapid coding, creative writing, and high-fidelity artifacts.',
+    tagline: 'Flagship balanced intelligence',
+    description: 'Fast, accurate, and articulate across coding, analysis, math, and Bengali/English conversation.',
     badge: 'Recommended',
   },
   {
     id: 'astrolabe-thinking',
     name: 'Astrolabe 3.7 Thinking',
-    tagline: 'Extended chain-of-thought reasoning',
-    description: 'Shows step-by-step analytical reasoning before producing solutions. Best for math, algorithms, and deep analysis.',
-    badge: 'Extended Thinking',
+    tagline: 'Deep step-by-step reasoning',
+    description: 'Uses extended reasoning depth for complex logic, architecture, algorithms, and STEM problems.',
+    badge: 'Deep Reason',
   },
   {
     id: 'astrolabe-3-opus',
     name: 'Astrolabe 3 Opus',
-    tagline: 'Highest nuance & deep synthesis',
-    description: 'Excels at complex academic research, philosophical dialogue, and nuanced literary Bengali/English writing.',
+    tagline: 'Nuanced writing & research',
+    description: 'Crafted for thorough research synthesis, essay composition, and nuanced multilingual prose.',
   },
   {
     id: 'astrolabe-3-haiku',
     name: 'Astrolabe 3 Haiku',
-    tagline: 'Ultra-fast & lightweight',
-    description: 'Near-instant responses for quick questions, translations, summaries, and edits.',
+    tagline: 'Instant & lightweight',
+    description: 'Ultra-low-latency answers for quick Q&A, translations, and rapid everyday tasks.',
   },
 ];
-
-export const CASTLE_MODELS = ASTROLABE_MODELS;
 
 export type ResponseStyle = 'default' | 'concise' | 'explanatory' | 'formal' | 'creative';
 
@@ -119,5 +122,4 @@ export interface UserSettings {
   responseStyle: ResponseStyle;
   customSystemPrompt: string;
   language: 'auto' | 'bn' | 'en';
-  apiKey?: string;
 }

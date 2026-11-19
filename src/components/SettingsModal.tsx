@@ -1,10 +1,5 @@
-import React, { useState } from 'react';
-import {
-  X,
-  Sun,
-  Moon,
-  Monitor,
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Sun, Moon, Monitor } from 'lucide-react';
 import { UserSettings, ASTROLABE_MODELS, ResponseStyle } from '../types';
 import { AstrolabeLogo } from './AstrolabeLogo';
 
@@ -22,7 +17,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onSaveSettings,
 }) => {
   const [localSettings, setLocalSettings] = useState<UserSettings>(settings);
-  const [activeTab, setActiveTab] = useState<'general' | 'models' | 'api' | 'custom' | 'about'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'models' | 'custom' | 'about'>('general');
+
+  useEffect(() => {
+    setLocalSettings(settings);
+  }, [settings, isOpen]);
 
   if (!isOpen) return null;
 
@@ -36,16 +35,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       <div className="relative w-full max-w-2xl max-h-[85vh] flex flex-col bg-white dark:bg-[#0E0E11] rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <AstrolabeLogo size={24} />
-            <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-              Astrolabe Settings & Preferences
+            <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+              Astrolabe AI Settings
             </h2>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+            className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -57,8 +56,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             onClick={() => setActiveTab('general')}
             className={`py-3 px-3 border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'general'
-                ? 'border-zinc-950 dark:border-white text-zinc-950 dark:text-white font-semibold'
-                : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                ? 'border-black dark:border-white text-black dark:text-white font-semibold'
+                : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white'
             }`}
           >
             General & Appearance
@@ -67,28 +66,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             onClick={() => setActiveTab('models')}
             className={`py-3 px-3 border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'models'
-                ? 'border-zinc-950 dark:border-white text-zinc-950 dark:text-white font-semibold'
-                : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                ? 'border-black dark:border-white text-black dark:text-white font-semibold'
+                : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white'
             }`}
           >
             Default Model
           </button>
           <button
-            onClick={() => setActiveTab('api')}
-            className={`py-3 px-3 border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
-              activeTab === 'api'
-                ? 'border-zinc-950 dark:border-white text-zinc-950 dark:text-white font-semibold'
-                : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
-            }`}
-          >
-            API Key & Deployment
-          </button>
-          <button
             onClick={() => setActiveTab('custom')}
             className={`py-3 px-3 border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'custom'
-                ? 'border-zinc-950 dark:border-white text-zinc-950 dark:text-white font-semibold'
-                : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                ? 'border-black dark:border-white text-black dark:text-white font-semibold'
+                : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white'
             }`}
           >
             Custom Instructions
@@ -97,11 +86,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             onClick={() => setActiveTab('about')}
             className={`py-3 px-3 border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'about'
-                ? 'border-zinc-950 dark:border-white text-zinc-950 dark:text-white font-semibold'
-                : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                ? 'border-black dark:border-white text-black dark:text-white font-semibold'
+                : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white'
             }`}
           >
-            About Astrolabe
+            About Astrolabe AI
           </button>
         </div>
 
@@ -109,15 +98,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <div className="flex-1 overflow-y-auto p-6 space-y-6 text-sm">
           {activeTab === 'general' && (
             <div className="space-y-6">
-              {/* Theme Selection */}
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-[#736E65] dark:text-[#9E9990] mb-2.5">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-2.5">
                   Color Mode
                 </label>
                 <div className="grid grid-cols-3 gap-3">
                   {[
-                    { id: 'light', label: 'Light', icon: <Sun className="w-4 h-4 text-zinc-900" /> },
-                    { id: 'dark', label: 'Dark', icon: <Moon className="w-4 h-4 text-zinc-200" /> },
+                    { id: 'light', label: 'Light', icon: <Sun className="w-4 h-4 text-zinc-950 dark:text-zinc-200" /> },
+                    { id: 'dark', label: 'Dark', icon: <Moon className="w-4 h-4 text-zinc-950 dark:text-zinc-200" /> },
                     { id: 'system', label: 'System', icon: <Monitor className="w-4 h-4 text-zinc-500" /> },
                   ].map((mode) => (
                     <button
@@ -128,8 +116,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       }
                       className={`flex flex-col items-center gap-2 p-3.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
                         localSettings.theme === mode.id
-                          ? 'border-zinc-950 dark:border-white bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-white ring-1 ring-zinc-950 dark:ring-white'
-                          : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300'
+                          ? 'border-black dark:border-white bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white ring-1 ring-black dark:ring-white'
+                          : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300'
                       }`}
                     >
                       {mode.icon}
@@ -139,7 +127,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
 
-              {/* Language Default */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-2">
                   Language Preference
@@ -158,8 +145,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       }
                       className={`p-3 rounded-xl border text-xs font-medium text-center transition-all cursor-pointer ${
                         localSettings.language === lang.id
-                          ? 'border-zinc-950 dark:border-white bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-white ring-1 ring-zinc-950 dark:ring-white'
-                          : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300'
+                          ? 'border-black dark:border-white bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white ring-1 ring-black dark:ring-white'
+                          : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300'
                       }`}
                     >
                       {lang.label}
@@ -168,7 +155,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
 
-              {/* Response Style Default */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-2">
                   Default Response Style
@@ -181,8 +167,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       onClick={() => setLocalSettings({ ...localSettings, responseStyle: st })}
                       className={`p-2.5 rounded-xl border text-xs font-medium capitalize text-center transition-all cursor-pointer ${
                         localSettings.responseStyle === st
-                          ? 'border-zinc-950 dark:border-white bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-white ring-1 ring-zinc-950 dark:ring-white'
-                          : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300'
+                          ? 'border-black dark:border-white bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white ring-1 ring-black dark:ring-white'
+                          : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300'
                       }`}
                     >
                       {st}
@@ -191,15 +177,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
 
-              {/* Toggles */}
               <div className="space-y-4 pt-2">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                      Extended Thinking by Default
+                    <div className="text-xs font-semibold text-zinc-950 dark:text-white">
+                      Deep Reasoning by Default
                     </div>
                     <div className="text-[12px] text-zinc-500">
-                      Astrolabe will perform deep step-by-step reasoning before complex answers.
+                      Enable deeper step-by-step analysis before complex answers.
                     </div>
                   </div>
                   <input
@@ -208,14 +193,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     onChange={(e) =>
                       setLocalSettings({ ...localSettings, enableThinking: e.target.checked })
                     }
-                    className="w-4 h-4 accent-zinc-950 dark:accent-white cursor-pointer"
+                    className="w-4 h-4 accent-black dark:accent-white cursor-pointer"
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                      Audio Response Synthesis
+                    <div className="text-xs font-semibold text-zinc-950 dark:text-white">
+                      Audio Read-Aloud Controls
                     </div>
                     <div className="text-[12px] text-zinc-500">
                       Enable text-to-speech speaker controls on messages.
@@ -227,7 +212,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     onChange={(e) =>
                       setLocalSettings({ ...localSettings, soundEnabled: e.target.checked })
                     }
-                    className="w-4 h-4 accent-zinc-950 dark:accent-white cursor-pointer"
+                    className="w-4 h-4 accent-black dark:accent-white cursor-pointer"
                   />
                 </div>
               </div>
@@ -237,7 +222,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {activeTab === 'models' && (
             <div className="space-y-3">
               <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-2">
-                Select Default Intelligence Engine
+                Select Default Intelligence Model
               </label>
 
               {ASTROLABE_MODELS.map((model) => (
@@ -248,8 +233,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   }
                   className={`flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer ${
                     localSettings.defaultModel === model.id
-                      ? 'border-zinc-950 dark:border-white bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-950 dark:ring-white'
-                      : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-850'
+                      ? 'border-black dark:border-white bg-zinc-100 dark:bg-zinc-800 ring-1 ring-black dark:ring-white'
+                      : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/60'
                   }`}
                 >
                   <input
@@ -257,15 +242,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     name="defaultModel"
                     checked={localSettings.defaultModel === model.id}
                     onChange={() => {}}
-                    className="mt-1 accent-zinc-950 dark:accent-white"
+                    className="mt-1 accent-black dark:accent-white"
                   />
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">
+                      <span className="font-semibold text-xs text-zinc-950 dark:text-white">
                         {model.name}
                       </span>
                       {model.badge && (
-                        <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 font-semibold">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-black text-white dark:bg-white dark:text-black font-semibold">
                           {model.badge}
                         </span>
                       )}
@@ -279,83 +264,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
-          {activeTab === 'api' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
-                  Google Gemini API Key (ঐচ্ছিক / Optional)
-                </label>
-                <p className="text-xs text-zinc-500 mb-3 leading-relaxed">
-                  ভার্সেল (Vercel) বা যেকোনো কাস্টম হোস্টিংয়ে ডিপ্লয় করার পর নিজস্ব কোটা ব্যবহার করতে অথবা কোনো সীমা ছাড়াই অত্যন্ত দ্রুততম রেসপন্সের জন্য আপনার নিজস্ব Gemini API Key এখানে দিতে পারেন। কী-টি সম্পূর্ণ এনক্রিপ্টেড অবস্থায় কেবল আপনার ব্রাউজারেই সংরক্ষিত থাকে।
-                </p>
-                <div className="relative">
-                  <input
-                    type="password"
-                    value={localSettings.apiKey || ''}
-                    onChange={(e) =>
-                      setLocalSettings({ ...localSettings, apiKey: e.target.value.trim() })
-                    }
-                    placeholder="AIzaSy..."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-mono text-xs outline-none focus:border-zinc-950 dark:focus:border-white"
-                  />
-                  {localSettings.apiKey && (
-                    <button
-                      type="button"
-                      onClick={() => setLocalSettings({ ...localSettings, apiKey: '' })}
-                      className="absolute right-3 top-2.5 text-xs text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer"
-                    >
-                      মুছুন
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs space-y-2">
-                <div className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
-                  <span>কীভাবে ফ্রি API Key পাবেন?</span>
-                  <a
-                    href="https://aistudio.google.com/app/apikey"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs underline hover:text-zinc-600 dark:hover:text-zinc-300 font-normal"
-                  >
-                    Google AI Studio খুলুন ↗
-                  </a>
-                </div>
-                <ol className="list-decimal pl-4 space-y-1 text-zinc-600 dark:text-zinc-400 text-[11px] leading-relaxed">
-                  <li>Google AI Studio-তে গিয়ে "Get API key" বাটনে ক্লিক করুন।</li>
-                  <li>একটি প্রজেক্ট সিলেক্ট করে "Create API Key" বাটনে চাপ দিন।</li>
-                  <li>কী-টি কপি করে এনে এখানে পেস্ট করে নিচে "Save Preferences" চাপুন।</li>
-                </ol>
-              </div>
-
-              <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs space-y-1.5">
-                <div className="font-semibold text-zinc-900 dark:text-zinc-100">
-                  Vercel ডিপ্লয়মেন্ট টিপস:
-                </div>
-                <p className="text-zinc-600 dark:text-zinc-400 text-[11px] leading-relaxed">
-                  যদি আপনি চান যে আপনার ভিজিটরদের কাউকে নিজের API Key দিতে হবে না, তবে Vercel ড্যাশবোর্ডে গিয়ে <strong>Project Settings → Environment Variables</strong> এ গিয়ে <code className="bg-zinc-200 dark:bg-zinc-800 px-1 py-0.5 rounded text-[10px]">GEMINI_API_KEY</code> নামে আপনার কী যুক্ত করে Re-deploy করুন।
-                </p>
-              </div>
-            </div>
-          )}
-
           {activeTab === 'custom' && (
             <div className="space-y-3">
               <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-                User Persona & Global Instructions
+                Custom System Instructions
               </label>
               <p className="text-xs text-zinc-500">
-                What would you like Astrolabe to know about you to provide tailored responses?
+                What would you like Astrolabe AI to know about you or follow in every chat?
               </p>
               <textarea
                 value={localSettings.customSystemPrompt}
                 onChange={(e) =>
                   setLocalSettings({ ...localSettings, customSystemPrompt: e.target.value })
                 }
-                placeholder="e.g., I am a full-stack engineer and writer. When writing code, prefer modern TypeScript and clean architectural patterns. When speaking in Bengali, use rich vocabulary..."
+                placeholder="e.g., I am a software developer. Keep code concise in TypeScript. Reply in natural Bengali when I ask in Bengali..."
                 rows={6}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 outline-none focus:border-zinc-950 dark:focus:border-white resize-none leading-relaxed text-xs sm:text-sm"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-950 dark:text-white outline-none focus:border-black dark:focus:border-white resize-none leading-relaxed text-xs sm:text-sm"
               />
             </div>
           )}
@@ -367,18 +291,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               <p>
-                <strong className="text-zinc-900 dark:text-zinc-100">Astrolabe AI</strong> is a next-generation AI assistant built for deep intellect, creative nuance, and architectural clarity.
-                Astrolabe brings real-time Artifacts, Projects, response style controls, and step-by-step thinking to your fingertips in a pristine monochrome environment.
+                <strong className="text-zinc-950 dark:text-white">Astrolabe AI</strong> is a next-generation conversational AI workspace engineered for fast, accurate answers, interactive Artifacts, live Web Search grounding, and project-scoped knowledge in a crisp monochrome interface.
               </p>
 
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
                   <div className="text-[11px] font-semibold text-zinc-500 uppercase">Interactive Engine</div>
-                  <div className="font-semibold text-zinc-900 dark:text-zinc-100 mt-0.5">Astrolabe Artifacts v2</div>
+                  <div className="font-semibold text-zinc-950 dark:text-white mt-0.5">Astrolabe Artifacts</div>
                 </div>
                 <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                  <div className="text-[11px] font-semibold text-zinc-500 uppercase">Reasoning Backend</div>
-                  <div className="font-semibold text-zinc-900 dark:text-zinc-100 mt-0.5">Gemini 3.1 Flash (Server)</div>
+                  <div className="text-[11px] font-semibold text-zinc-500 uppercase">Core Intelligence</div>
+                  <div className="font-semibold text-zinc-950 dark:text-white mt-0.5">Gemini 4 Hydrogen</div>
                 </div>
               </div>
             </div>
@@ -397,7 +320,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             type="button"
             onClick={handleSave}
-            className="px-5 py-2 rounded-xl bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-xs font-semibold shadow-xs cursor-pointer"
+            className="px-5 py-2 rounded-xl bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 text-xs font-semibold shadow-xs cursor-pointer"
           >
             Save Preferences
           </button>

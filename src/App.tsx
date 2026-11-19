@@ -8,6 +8,7 @@ import {
   FileAttachment,
   AstrolabeModel,
   ResponseStyle,
+  GroundingSource,
 } from './types';
 import {
   getSavedChats,
@@ -21,6 +22,7 @@ import {
 } from './utils/storage';
 import { parseAstrolabeResponse } from './utils/artifactParser';
 import { useAuth } from './context/AuthContext';
+import { auth } from './lib/firebase';
 import {
   subscribeToUserChats,
   subscribeToUserProjects,
@@ -39,10 +41,12 @@ import { ArtifactsPane } from './components/ArtifactsPane';
 import { ProjectModal } from './components/ProjectModal';
 import { SettingsModal } from './components/SettingsModal';
 import { AuthModal } from './components/AuthModal';
-import { synthesizeClientResponse } from './utils/aiFallback';
 
 export default function App() {
   const { user } = useAuth();
+  const isCloudAuthenticated = Boolean(
+    user && !user.uid.startsWith('guest_') && auth.currentUser?.uid === user.uid
+  );
 
   const [chats, setChats] = useState<ChatSession[]>(() => getSavedChats());
   const [activeChatId, setActiveChatId] = useState<string | null>(() => getActiveChatId());
@@ -51,50 +55,44 @@ export default function App() {
   const [settings, setSettings] = useState<UserSettings>(() => getSavedSettings());
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
   const [selectedModel, setSelectedModel] = useState<AstrolabeModel>(settings.defaultModel);
   const [responseStyle, setResponseStyle] = useState<ResponseStyle>(settings.responseStyle || 'default');
   const [enableThinking, setEnableThinking] = useState(settings.enableThinking);
+  const [useSearch, setUseSearch] = useState(false);
 
-  // Artifacts state
   const [activeArtifact, setActiveArtifact] = useState<AstrolabeArtifact | null>(null);
   const [isArtifactsOpen, setIsArtifactsOpen] = useState(false);
 
-  // Streaming & abort controller
   const [isStreaming, setIsStreaming] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Modals
   const [projectModalOpen, setProjectModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Real-time Cloud Synchronization when user is logged in
+  // Sync Firestore chats and projects only when authenticated with Firebase
   useEffect(() => {
-    if (!user) return;
+    if (!isCloudAuthenticated || !user) return;
 
     syncUserProfile(user);
 
     const unsubChats = subscribeToUserChats(user.uid, (cloudChats) => {
-      if (cloudChats.length > 0) {
-        setChats(cloudChats);
-      }
+      setChats(cloudChats);
     });
 
     const unsubProjects = subscribeToUserProjects(user.uid, (cloudProjects) => {
-      if (cloudProjects.length > 0) {
-        setProjects(cloudProjects);
-      }
+      setProjects(cloudProjects);
     });
 
     return () => {
       unsubChats();
       unsubProjects();
     };
-  }, [user]);
+  }, [isCloudAuthenticated, user]);
 
-  // Save to localStorage as well for offline/guest resiliency
   useEffect(() => {
     saveChats(chats);
   }, [chats]);
@@ -103,23 +101,23 @@ export default function App() {
     saveProjects(projects);
   }, [projects]);
 
+  const isDarkTheme =
+    settings.theme === 'dark' ||
+    (settings.theme === 'system' &&
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches);
+
   useEffect(() => {
     saveSettings(settings);
-    const isDark =
-      settings.theme === 'dark' ||
-      (settings.theme === 'system' &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches);
-    if (isDark) {
+    if (isDarkTheme) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [settings]);
+  }, [settings, isDarkTheme]);
 
-  // Find active chat
   const currentChat = chats.find((c) => c.id === activeChatId) || null;
 
-  // Sync active chat model
   useEffect(() => {
     if (currentChat) {
       setSelectedModel(currentChat.model || settings.defaultModel);
@@ -132,10 +130,11 @@ export default function App() {
       if (chatArtifact && !activeArtifact) {
         setActiveArtifact(chatArtifact);
       }
+    } else {
+      persistActiveChatId(null);
     }
   }, [activeChatId]);
 
-  // Auto scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -146,7 +145,6 @@ export default function App() {
     }
   }, [currentChat?.messages.length, isStreaming]);
 
-  // Keyboard shortcut: Cmd+K / Ctrl+K for new chat
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -158,7 +156,6 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeProjectId, selectedModel]);
 
-  // Create new chat
   const handleCreateNewChat = () => {
     const newChat: ChatSession = {
       id: `chat-${Date.now()}`,
@@ -169,34 +166,31 @@ export default function App() {
       projectId: activeProjectId || undefined,
       model: selectedModel,
     };
-    setChats([newChat, ...chats]);
+    setChats((prev) => [newChat, ...prev]);
     setActiveChatId(newChat.id);
     setActiveArtifact(null);
     setIsArtifactsOpen(false);
 
-    if (user) {
+    if (isCloudAuthenticated && user) {
       saveChatToCloud(user.uid, newChat);
     }
   };
 
-  // Delete chat
   const handleDeleteChat = (id: string) => {
     const updated = chats.filter((c) => c.id !== id);
     setChats(updated);
     if (activeChatId === id) {
       const nextId = updated.length > 0 ? updated[0].id : null;
       setActiveChatId(nextId);
-      if (!nextId) {
-        handleCreateNewChat();
-      }
+      setActiveArtifact(null);
+      setIsArtifactsOpen(false);
     }
 
-    if (user) {
+    if (isCloudAuthenticated && user) {
       deleteChatFromCloud(user.uid, id);
     }
   };
 
-  // Rename chat
   const handleRenameChat = (id: string, newTitle: string) => {
     const updated = chats.map((c) =>
       c.id === id ? { ...c, title: newTitle, updatedAt: Date.now() } : c
@@ -204,12 +198,11 @@ export default function App() {
     setChats(updated);
 
     const changed = updated.find((c) => c.id === id);
-    if (user && changed) {
+    if (isCloudAuthenticated && user && changed) {
       saveChatToCloud(user.uid, changed);
     }
   };
 
-  // Toggle Pin chat
   const handleTogglePinChat = (id: string) => {
     const updated = chats.map((c) =>
       c.id === id ? { ...c, isPinned: !c.isPinned, updatedAt: Date.now() } : c
@@ -217,12 +210,11 @@ export default function App() {
     setChats(updated);
 
     const changed = updated.find((c) => c.id === id);
-    if (user && changed) {
+    if (isCloudAuthenticated && user && changed) {
       saveChatToCloud(user.uid, changed);
     }
   };
 
-  // Stop streaming
   const handleStopStreaming = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -231,7 +223,6 @@ export default function App() {
     setIsStreaming(false);
   };
 
-  // Send message
   const handleSendMessage = async (
     text: string,
     attachments: FileAttachment[] = []
@@ -243,7 +234,7 @@ export default function App() {
     if (!targetChat) {
       targetChat = {
         id: `chat-${Date.now()}`,
-        title: text.slice(0, 35) || 'New chat',
+        title: text.slice(0, 42).trim() || 'New chat',
         createdAt: Date.now(),
         updatedAt: Date.now(),
         messages: [],
@@ -305,28 +296,26 @@ export default function App() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    // Dynamic inactivity timer: resets whenever incoming tokens arrive so long outputs never get cut off
     let activityTimeout: any = null;
     const resetActivityTimer = () => {
       if (activityTimeout) clearTimeout(activityTimeout);
       activityTimeout = setTimeout(() => {
         if (abortControllerRef.current) {
-          console.warn('Astrolabe client stream inactivity timeout');
           abortControllerRef.current.abort();
         }
-      }, 60000); // 60 seconds of complete silence before aborting
+      }, 60000);
     };
     resetActivityTimer();
 
     let streamErrorMessage: string | null = null;
     let rawAccumulated = '';
+    let collectedSources: GroundingSource[] = [];
 
     try {
       const response = await fetch('/api/chat/stream', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(settings.apiKey ? { 'x-gemini-api-key': settings.apiKey } : {}),
         },
         body: JSON.stringify({
           messages: updatedMessages
@@ -340,12 +329,13 @@ export default function App() {
           systemInstruction,
           responseStyle,
           enableThinking,
+          useSearch,
         }),
         signal: controller.signal,
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`Server returned status ${response.status}`);
       }
 
       const reader = response.body?.getReader();
@@ -371,11 +361,13 @@ export default function App() {
                   streamErrorMessage = data.error;
                   break;
                 }
+                if (Array.isArray(data.sources)) {
+                  collectedSources = data.sources;
+                }
                 if (data.text) {
                   rawAccumulated += data.text;
                   const now = Date.now();
 
-                  // High-frequency responsive throttle for ultra-smooth typing
                   if (now - lastRenderTime > 25 || data.text.includes('\n')) {
                     lastRenderTime = now;
                     const parsed = parseAstrolabeResponse(rawAccumulated, assistantMessageId);
@@ -419,25 +411,23 @@ export default function App() {
         }
       }
 
-      // Final pass on stream completion
       const totalThinkingTime = (Date.now() - startTime) / 1000;
       const finalParsed = parseAstrolabeResponse(rawAccumulated, assistantMessageId);
+      const finalContent = finalParsed.cleanedText || rawAccumulated;
 
-      const hasContent = (finalParsed.cleanedText || rawAccumulated).trim().length > 0;
-      const fallbackText = synthesizeClientResponse(text);
-
-      const resolvedContent = hasContent
-        ? (finalParsed.cleanedText || rawAccumulated)
-        : fallbackText;
+      if (!finalContent.trim() && !finalParsed.artifact) {
+        throw new Error('No response was generated. Please try again.');
+      }
 
       const finalMessages = updatedMessages.map((m) => {
         if (m.id !== assistantMessageId) return m;
         return {
           ...m,
-          content: resolvedContent,
+          content: finalContent,
           thinking: finalParsed.thinking,
           thinkingTime: finalParsed.thinking ? totalThinkingTime : undefined,
           artifact: finalParsed.artifact,
+          sources: collectedSources.length > 0 ? collectedSources : undefined,
           status: 'done' as const,
         };
       });
@@ -453,7 +443,7 @@ export default function App() {
         prev.map((c) => (c.id === targetChat!.id ? finalChatState : c))
       );
 
-      if (user) {
+      if (isCloudAuthenticated && user) {
         saveChatToCloud(user.uid, finalChatState);
       }
 
@@ -462,30 +452,52 @@ export default function App() {
         setIsArtifactsOpen(true);
       }
     } catch (err: any) {
-      console.warn('Stream handled gracefully with dynamic client synthesis:', err?.message || err);
-      const fallback = rawAccumulated.trim().length > 0
-        ? rawAccumulated
-        : synthesizeClientResponse(text);
-
-      const parsed = parseAstrolabeResponse(fallback, assistantMessageId);
-      setChats((prev) =>
-        prev.map((c) => {
-          if (c.id !== targetChat!.id) return c;
-          return {
-            ...c,
-            messages: c.messages.map((m) => {
-              if (m.id !== assistantMessageId) return m;
-              return {
-                ...m,
-                content: parsed.cleanedText || fallback,
-                thinking: parsed.thinking,
-                artifact: parsed.artifact,
-                status: 'done' as const,
-              };
-            }),
-          };
-        })
-      );
+      const isAbort = err?.name === 'AbortError';
+      if (isAbort && rawAccumulated.trim().length > 0) {
+        const parsed = parseAstrolabeResponse(rawAccumulated, assistantMessageId);
+        setChats((prev) =>
+          prev.map((c) =>
+            c.id !== targetChat!.id
+              ? c
+              : {
+                  ...c,
+                  messages: c.messages.map((m) =>
+                    m.id !== assistantMessageId
+                      ? m
+                      : {
+                          ...m,
+                          content: parsed.cleanedText || rawAccumulated,
+                          thinking: parsed.thinking,
+                          artifact: parsed.artifact,
+                          status: 'done' as const,
+                        }
+                  ),
+                }
+          )
+        );
+      } else {
+        const errorText = isAbort
+          ? 'Generation stopped.'
+          : err?.message || 'Unable to generate a response. Please retry.';
+        setChats((prev) =>
+          prev.map((c) =>
+            c.id !== targetChat!.id
+              ? c
+              : {
+                  ...c,
+                  messages: c.messages.map((m) =>
+                    m.id !== assistantMessageId
+                      ? m
+                      : {
+                          ...m,
+                          content: errorText,
+                          status: 'error' as const,
+                        }
+                  ),
+                }
+          )
+        );
+      }
     } finally {
       if (activityTimeout) clearTimeout(activityTimeout);
       setIsStreaming(false);
@@ -493,7 +505,6 @@ export default function App() {
     }
   };
 
-  // Retry previous assistant message
   const handleRetry = (msgIndex: number) => {
     if (!currentChat || isStreaming) return;
     const prevMessages = currentChat.messages.slice(0, msgIndex);
@@ -509,13 +520,11 @@ export default function App() {
     handleSendMessage(lastUserMsg.content, lastUserMsg.attachments);
   };
 
-  // Open Artifact
   const handleOpenArtifact = (art: AstrolabeArtifact) => {
     setActiveArtifact(art);
     setIsArtifactsOpen(true);
   };
 
-  // Save project
   const handleSaveProject = (savedProject: Project) => {
     const exists = projects.some((p) => p.id === savedProject.id);
     const updated = exists
@@ -525,7 +534,7 @@ export default function App() {
     setProjects(updated);
     setActiveProjectId(savedProject.id);
 
-    if (user) {
+    if (isCloudAuthenticated && user) {
       saveProjectToCloud(user.uid, savedProject);
     }
   };
@@ -535,8 +544,16 @@ export default function App() {
     if (activeProjectId === projectId) {
       setActiveProjectId(null);
     }
-    if (user) {
+    if (isCloudAuthenticated && user) {
       deleteProjectFromCloud(user.uid, projectId);
+    }
+  };
+
+  const handleToggleSidebar = () => {
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(!sidebarOpen);
+    } else {
+      setDesktopSidebarOpen(!desktopSidebarOpen);
     }
   };
 
@@ -545,8 +562,7 @@ export default function App() {
   const hasMessages = currentMessages.length > 0;
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-white dark:bg-[#09090B] text-zinc-900 dark:text-zinc-100 font-sans">
-      {/* Astrolabe Sidebar with Google Auth */}
+    <div className="flex h-screen w-screen overflow-hidden bg-white dark:bg-[#09090B] text-zinc-950 dark:text-zinc-100 font-sans">
       <Sidebar
         chats={chats}
         activeChatId={activeChatId}
@@ -571,13 +587,13 @@ export default function App() {
         onOpenSettings={() => setSettingsModalOpen(true)}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        isDesktopOpen={desktopSidebarOpen}
+        onToggleDesktop={() => setDesktopSidebarOpen(!desktopSidebarOpen)}
       />
 
-      {/* Main Chat & Content Area */}
       <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative">
-        {/* Top Header */}
         <Header
-          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          onToggleSidebar={handleToggleSidebar}
           chatTitle={currentChat?.title || 'New chat'}
           selectedModel={selectedModel}
           onSelectModel={setSelectedModel}
@@ -588,14 +604,15 @@ export default function App() {
           isArtifactsOpen={isArtifactsOpen}
           onToggleArtifacts={() => setIsArtifactsOpen(!isArtifactsOpen)}
           onNewChat={handleCreateNewChat}
+          isDarkTheme={isDarkTheme}
+          onToggleTheme={() =>
+            setSettings({ ...settings, theme: isDarkTheme ? 'light' : 'dark' })
+          }
         />
 
-        {/* Middle Stage: Split between Chat View and Artifacts Side Panel */}
         <div className="flex-1 flex min-h-0 overflow-hidden relative">
-          {/* Chat Column */}
           <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
-            {/* Scrollable Message List or Welcome Screen */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto flex flex-col">
               {!hasMessages ? (
                 <WelcomeScreen
                   onSelectPrompt={(p) => handleSendMessage(p)}
@@ -620,37 +637,36 @@ export default function App() {
               )}
             </div>
 
-            {/* Bottom Input Area */}
             <ChatInput
               onSendMessage={handleSendMessage}
               isStreaming={isStreaming}
               onStopStreaming={handleStopStreaming}
               enableThinking={enableThinking}
               onToggleThinking={() => setEnableThinking(!enableThinking)}
+              useSearch={useSearch}
+              onToggleSearch={() => setUseSearch(!useSearch)}
               defaultLanguage={settings.language}
               placeholder={
                 activeProject
-                  ? `Message Astrolabe in ${activeProject.name}...`
-                  : 'Message Astrolabe (Type or click Voice)...'
+                  ? `Message Astrolabe AI in ${activeProject.name}...`
+                  : 'Ask Astrolabe AI anything...'
               }
             />
           </div>
 
-          {/* Interactive Astrolabe Artifacts Side Panel */}
           <ArtifactsPane
             artifact={activeArtifact}
             isOpen={isArtifactsOpen}
             onClose={() => setIsArtifactsOpen(false)}
             onUpdateArtifact={(updated) => {
               setActiveArtifact(updated);
-              // Also update in active chat messages if present
               if (currentChat) {
                 const updatedMessages = currentChat.messages.map((m) =>
                   m.artifact?.id === updated.id ? { ...m, artifact: updated } : m
                 );
                 const updatedChat: ChatSession = { ...currentChat, messages: updatedMessages };
                 setChats((prev) => prev.map((c) => (c.id === currentChat.id ? updatedChat : c)));
-                if (user) {
+                if (isCloudAuthenticated && user) {
                   saveChatToCloud(user.uid, updatedChat);
                 }
               }
@@ -659,7 +675,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* Project Modal */}
       <ProjectModal
         isOpen={projectModalOpen}
         onClose={() => setProjectModalOpen(false)}
@@ -668,7 +683,6 @@ export default function App() {
         onDeleteProject={handleDeleteProject}
       />
 
-      {/* Settings Modal */}
       <SettingsModal
         isOpen={settingsModalOpen}
         onClose={() => setSettingsModalOpen(false)}
@@ -676,7 +690,6 @@ export default function App() {
         onSaveSettings={(s) => setSettings(s)}
       />
 
-      {/* Authentication Modal */}
       <AuthModal />
     </div>
   );

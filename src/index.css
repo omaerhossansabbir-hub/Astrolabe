@@ -6,36 +6,36 @@
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-    --castle-coral: #18181B;
-    --castle-coral-hover: #27272A;
-    --castle-coral-subtle: #F4F4F5;
-    --castle-coral-border: #E4E4E7;
+    --astrolabe-accent: #09090B;
+    --astrolabe-accent-hover: #27272A;
+    --astrolabe-accent-subtle: #F4F4F5;
+    --astrolabe-accent-border: #E4E4E7;
 
     --bg-main: #FFFFFF;
-    --bg-sidebar: #FAFAFB;
+    --bg-sidebar: #FAFAFA;
     --bg-card: #FFFFFF;
     --bg-hover: #F4F4F5;
     --border-subtle: #E4E4E7;
     --border-strong: #D4D4D8;
-    
+
     --text-primary: #09090B;
     --text-secondary: #52525B;
     --text-muted: #71717A;
   }
 
   .dark {
-    --castle-coral: #FAFAFA;
-    --castle-coral-hover: #E4E4E7;
-    --castle-coral-subtle: #27272A;
-    --castle-coral-border: #3F3F46;
+    --astrolabe-accent: #FAFAFA;
+    --astrolabe-accent-hover: #E4E4E7;
+    --astrolabe-accent-subtle: #18181B;
+    --astrolabe-accent-border: #27272A;
 
     --bg-main: #09090B;
     --bg-sidebar: #09090B;
-    --bg-card: #121215;
+    --bg-card: #111113;
     --bg-hover: #18181B;
     --border-subtle: #27272A;
     --border-strong: #3F3F46;
-    
+
     --text-primary: #FAFAFA;
     --text-secondary: #A1A1AA;
     --text-muted: #71717A;
@@ -48,11 +48,11 @@
   }
 }
 
-.font-serif-castle {
+.font-serif-astrolabe {
   font-family: var(--font-serif);
 }
 
-.font-mono-castle {
+.font-mono-astrolabe {
   font-family: var(--font-mono);
 }
 
@@ -73,68 +73,73 @@
 }
 
 /* Markdown typography styling */
-.castle-markdown {
-  line-height: 1.7;
+.astrolabe-markdown {
+  line-height: 1.72;
   word-break: break-word;
 }
-.castle-markdown p {
+.astrolabe-markdown p {
   margin-bottom: 0.9em;
 }
-.castle-markdown p:last-child {
+.astrolabe-markdown p:last-child {
   margin-bottom: 0;
 }
-.castle-markdown h1,
-.castle-markdown h2,
-.castle-markdown h3,
-.castle-markdown h4 {
+.astrolabe-markdown h1,
+.astrolabe-markdown h2,
+.astrolabe-markdown h3,
+.astrolabe-markdown h4 {
   font-weight: 600;
-  margin-top: 1.4em;
+  margin-top: 1.35em;
   margin-bottom: 0.5em;
   line-height: 1.3;
+  letter-spacing: -0.01em;
 }
-.castle-markdown h1 { font-size: 1.5rem; }
-.castle-markdown h2 { font-size: 1.25rem; }
-.castle-markdown h3 { font-size: 1.1rem; }
-.castle-markdown ul {
+.astrolabe-markdown h1 { font-size: 1.45rem; }
+.astrolabe-markdown h2 { font-size: 1.22rem; }
+.astrolabe-markdown h3 { font-size: 1.08rem; }
+.astrolabe-markdown ul {
   list-style-type: disc;
   padding-left: 1.4rem;
   margin-bottom: 0.9em;
 }
-.castle-markdown ol {
+.astrolabe-markdown ol {
   list-style-type: decimal;
   padding-left: 1.4rem;
   margin-bottom: 0.9em;
 }
-.castle-markdown li {
-  margin-bottom: 0.3em;
+.astrolabe-markdown li {
+  margin-bottom: 0.35em;
 }
-.castle-markdown blockquote {
-  border-left: 3px solid var(--castle-coral);
+.astrolabe-markdown blockquote {
+  border-left: 3px solid var(--astrolabe-accent);
   padding-left: 1rem;
   font-style: italic;
   margin: 1rem 0;
   color: var(--text-secondary);
 }
-.castle-markdown table {
+.astrolabe-markdown table {
   width: 100%;
   border-collapse: collapse;
   margin: 1.2rem 0;
   font-size: 0.9rem;
 }
-.castle-markdown th,
-.castle-markdown td {
+.astrolabe-markdown th,
+.astrolabe-markdown td {
   border: 1px solid var(--border-subtle);
   padding: 0.5rem 0.8rem;
   text-align: left;
 }
-.castle-markdown th {
+.astrolabe-markdown th {
   background-color: var(--bg-hover);
   font-weight: 600;
 }
-.castle-markdown code:not(pre code) {
+.astrolabe-markdown code:not(pre code) {
   font-family: var(--font-mono);
   background-color: var(--bg-hover);
   padding: 0.15rem 0.4rem;
   border-radius: 0.3rem;
-  font-size: 0.88em;
+  font-size: 0.87em;
+}
+.astrolabe-markdown a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }

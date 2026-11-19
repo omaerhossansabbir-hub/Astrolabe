@@ -10,7 +10,7 @@ import {
   MicOff,
   Sparkles,
   Loader2,
-  Film,
+  Globe,
   Code2,
 } from 'lucide-react';
 import { FileAttachment } from '../types';
@@ -21,6 +21,8 @@ interface ChatInputProps {
   onStopStreaming: () => void;
   enableThinking: boolean;
   onToggleThinking: () => void;
+  useSearch: boolean;
+  onToggleSearch: () => void;
   placeholder?: string;
   defaultLanguage?: 'auto' | 'bn' | 'en';
 }
@@ -31,16 +33,19 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   onStopStreaming,
   enableThinking,
   onToggleThinking,
-  placeholder = 'Reply to Astrolabe...',
+  useSearch,
+  onToggleSearch,
+  placeholder = 'Ask Astrolabe AI anything...',
   defaultLanguage = 'auto',
 }) => {
   const [input, setInput] = useState('');
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const [isListening, setIsListening] = useState(false);
-  const [voiceLang, setVoiceLang] = useState<'bn-BD' | 'en-US'>(
+  const [voiceLang] = useState<'bn-BD' | 'en-US'>(
     defaultLanguage === 'en' ? 'en-US' : 'bn-BD'
   );
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -53,13 +58,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   }, [input]);
 
-  // Clean up speech recognition on unmount
   useEffect(() => {
     return () => {
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
-        } catch (e) {
+        } catch {
           // ignore
         }
       }
@@ -78,7 +82,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     if (isListening && recognitionRef.current) {
       try {
         recognitionRef.current.stop();
-      } catch (e) {
+      } catch {
         // ignore
       }
       setIsListening(false);
@@ -91,9 +95,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-    // Web Speech API Voice Prompt handler
-  const [voiceError, setVoiceError] = useState<string | null>(null);
-
   const toggleVoiceInput = () => {
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -101,8 +102,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     if (!SpeechRecognition) {
       setVoiceError(
         voiceLang === 'bn-BD'
-          ? 'আপনার ব্রাউজারে স্পিচ রিকগনিশন সমর্থন করে না। অনুগ্রহ করে ক্রোম বা এজ ব্রাউজার ব্যবহার করুন।'
-          : 'Speech Recognition is not supported in this browser. Please use Google Chrome or Edge.'
+          ? 'আপনার ব্রাউজারে স্পিচ রিকগনিশন সমর্থিত নয়। অনুগ্রহ করে ক্রোম বা এজ ব্রাউজার ব্যবহার করুন।'
+          : 'Speech Recognition is not supported in this browser. Please use Chrome or Edge.'
       );
       setTimeout(() => setVoiceError(null), 5000);
       return;
@@ -169,7 +170,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  // Enhance prompt with AI
   const handleEnhancePrompt = async () => {
     if (!input.trim() || isEnhancing) return;
     setIsEnhancing(true);
@@ -241,13 +241,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const wordCount = input.trim() ? input.trim().split(/\s+/).length : 0;
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 pb-4">
-      {/* Container Box styled in ChatGPT / Claude minimalist floating container */}
+    <div className="w-full max-w-3xl mx-auto px-4 pb-4 pt-1">
       <div
-        className={`relative rounded-2xl bg-white dark:bg-[#18181B] border transition-all shadow-lg shadow-black/5 ${
+        className={`relative rounded-2xl bg-white dark:bg-[#141417] border transition-all shadow-lg shadow-black/5 ${
           isListening
-            ? 'border-red-500 ring-2 ring-red-500/20'
-            : 'border-zinc-200 dark:border-zinc-800 focus-within:border-zinc-950 dark:focus-within:border-zinc-300 focus-within:ring-2 focus-within:ring-zinc-900/10 dark:focus-within:ring-white/10'
+            ? 'border-black dark:border-white ring-2 ring-black/20 dark:ring-white/20'
+            : 'border-zinc-200 dark:border-zinc-800 focus-within:border-black dark:focus-within:border-zinc-400 focus-within:ring-2 focus-within:ring-black/5 dark:focus-within:ring-white/10'
         }`}
       >
         {/* Voice Error Banner */}
@@ -266,28 +265,28 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
         {/* Voice Listening Active Banner */}
         {isListening && (
-          <div className="flex items-center justify-between px-4 py-2 bg-red-50 dark:bg-red-950/30 border-b border-red-200 dark:border-red-900/50 rounded-t-2xl text-xs text-red-600 dark:text-red-400 animate-in fade-in">
+          <div className="flex items-center justify-between px-4 py-2 bg-zinc-900 text-white dark:bg-zinc-100 dark:text-black border-b border-zinc-800 dark:border-zinc-200 rounded-t-2xl text-xs">
             <div className="flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white dark:bg-black opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-white dark:bg-black"></span>
               </span>
               <span className="font-semibold">
-                শুনছি... কথা বলুন (Listening... speak naturally in Bengali or English)
+                Listening... Speak in Bengali or English
               </span>
             </div>
 
             <button
               type="button"
               onClick={toggleVoiceInput}
-              className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-red-600 text-white hover:bg-red-700 cursor-pointer shadow-xs"
+              className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white text-black dark:bg-black dark:text-white cursor-pointer"
             >
-              সম্পন্ন (Done)
+              Done
             </button>
           </div>
         )}
 
-        {/* Attachment preview pills */}
+        {/* Attachment previews */}
         {attachments.length > 0 && (
           <div className="flex flex-wrap gap-2 p-3 pb-0">
             {attachments.map((att) => (
@@ -309,7 +308,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 </span>
                 <button
                   onClick={() => removeAttachment(att.id)}
-                  className="p-0.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer"
+                  className="p-0.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-zinc-500 hover:text-black dark:hover:text-white cursor-pointer"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -326,14 +325,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           onKeyDown={handleKeyDown}
           placeholder={isListening ? 'Speak now, your speech will appear here...' : placeholder}
           rows={1}
-          className="w-full px-4 pt-3.5 pb-2 text-[15px] bg-transparent text-zinc-950 dark:text-zinc-50 placeholder-zinc-400 dark:placeholder-zinc-500 outline-none resize-none leading-relaxed"
+          className="w-full px-4 pt-3.5 pb-2 text-[15px] bg-transparent text-zinc-950 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 outline-none resize-none leading-relaxed"
           style={{ minHeight: '52px' }}
         />
 
         {/* Bottom Control Bar */}
         <div className="flex items-center justify-between px-3 py-2 border-t border-zinc-100 dark:border-zinc-800/80">
-          {/* Left Controls: File Attachment, Artifacts Builder, Video Studio, Thinking, Prompt Enhancer */}
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center gap-1 flex-wrap">
             <input
               ref={fileInputRef}
               type="file"
@@ -345,117 +343,110 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="p-2 rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-950 dark:hover:text-zinc-100 transition-colors cursor-pointer"
-              title="Attach documents, images, or code"
+              className="p-2 rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
+              title="Attach files or images"
             >
               <Paperclip className="w-4 h-4" />
             </button>
 
-            {/* Artifacts / Interactive Apps Tool */}
+            {/* Web Search Grounding Toggle (ChatGPT Search / Gemini style) */}
+            <button
+              type="button"
+              onClick={onToggleSearch}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                useSearch
+                  ? 'bg-black text-white dark:bg-white dark:text-black'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-black dark:hover:text-white'
+              }`}
+              title="Search the web for live, up-to-date answers"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Search</span>
+            </button>
+
+            {/* Deep Reasoning Toggle */}
+            <button
+              type="button"
+              onClick={onToggleThinking}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                enableThinking
+                  ? 'bg-black text-white dark:bg-white dark:text-black'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-black dark:hover:text-white'
+              }`}
+              title="Toggle step-by-step deep reasoning"
+            >
+              <Brain className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Reason</span>
+            </button>
+
+            {/* Interactive Artifacts Quick Action */}
             <button
               type="button"
               onClick={() => {
                 if (!input.includes('Artifact') && !input.includes('আর্টিফ্যাক্ট')) {
                   setInput((prev) =>
                     prev.trim()
-                      ? `${prev.trim()} (Build this as a complete interactive Astrolabe Artifact with live preview)`
-                      : 'Build a complete interactive web application with HTML, CSS, and JavaScript as an Astrolabe Artifact: '
+                      ? `${prev.trim()} (Build this as an interactive Astrolabe Artifact)`
+                      : 'Build a complete interactive HTML/CSS/JS web app as an Astrolabe Artifact: '
                   );
                 }
               }}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-950 dark:hover:text-white transition-all cursor-pointer"
-              title="Build interactive websites, games, software, and apps with live preview"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-black dark:hover:text-white transition-all cursor-pointer"
+              title="Build an interactive app or UI artifact"
             >
-              <Code2 className="w-3.5 h-3.5 text-zinc-900 dark:text-zinc-100" />
-              <span className="hidden sm:inline">Artifacts</span>
+              <Code2 className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Artifact</span>
             </button>
 
-            {/* Video Studio & Storyboard Tool */}
-            <button
-              type="button"
-              onClick={() => {
-                if (!input.includes('video') && !input.includes('ভিডিও')) {
-                  setInput((prev) =>
-                    prev.trim()
-                      ? `${prev.trim()} (Generate a cinematic AI video production storyboard, camera directions, and prompts for Sora/Veo/Runway)`
-                      : 'Create a cinematic multi-scene AI video storyboard, camera movements, and production prompts for: '
-                  );
-                }
-              }}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-950 dark:hover:text-white transition-all cursor-pointer"
-              title="Create cinematic AI video storyboards and production prompts"
-            >
-              <Film className="w-3.5 h-3.5 text-zinc-900 dark:text-zinc-100" />
-              <span className="hidden sm:inline">Video Studio</span>
-            </button>
-
-            {/* Extended Thinking Toggle */}
-            <button
-              type="button"
-              onClick={onToggleThinking}
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                enableThinking
-                  ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 ring-1 ring-zinc-700'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-              }`}
-              title="Toggle extended analytical thinking"
-            >
-              <Brain className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Thinking</span>
-            </button>
-
-            {/* AI Prompt Enhancer ✨ */}
+            {/* Prompt Enhancer */}
             {input.trim().length > 3 && (
               <button
                 type="button"
                 onClick={handleEnhancePrompt}
                 disabled={isEnhancing}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 text-xs font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all cursor-pointer disabled:opacity-50"
-                title="Automatically improve and expand your prompt"
+                title="Improve prompt clarity"
               >
                 {isEnhancing ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
                 ) : (
-                  <Sparkles className="w-3 h-3 text-zinc-700 dark:text-zinc-300" />
+                  <Sparkles className="w-3 h-3" />
                 )}
                 <span className="hidden lg:inline">Enhance</span>
               </button>
             )}
           </div>
 
-          {/* Right Controls: Word count, Voice Microphone (adjacent to Send), and Send / Stop button */}
           <div className="flex items-center gap-1.5">
             {wordCount > 0 && (
-              <span className="hidden sm:inline text-[11px] text-zinc-400 font-mono pr-1">
-                {wordCount} {wordCount === 1 ? 'word' : 'words'}
+              <span className="hidden sm:inline text-[11px] text-zinc-400 font-mono-astrolabe pr-1">
+                {wordCount}w
               </span>
             )}
 
-            {/* Voice Input Microphone Button - Directly adjacent to Send */}
             <button
               type="button"
               onClick={toggleVoiceInput}
               className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all cursor-pointer ${
                 isListening
-                  ? 'bg-red-500 text-white animate-pulse shadow-md ring-2 ring-red-400'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-950 dark:hover:text-zinc-100'
+                  ? 'bg-black text-white dark:bg-white dark:text-black animate-pulse'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-black dark:hover:text-white'
               }`}
-              title={isListening ? 'Click to stop listening' : 'Dictate with voice prompt (বাংলা বা ইংরেজিতে কথা বলুন)'}
+              title={isListening ? 'Stop voice input' : 'Voice input'}
             >
               {isListening ? (
-                <MicOff className="w-4 h-4 text-white" />
+                <MicOff className="w-4 h-4" />
               ) : (
-                <Mic className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
+                <Mic className="w-4 h-4" />
               )}
             </button>
 
-            {/* Send / Stop Action Button */}
             {isStreaming ? (
               <button
                 type="button"
                 onClick={onStopStreaming}
-                className="flex items-center justify-center w-8 h-8 rounded-xl bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors cursor-pointer"
-                title="Stop generation"
+                className="flex items-center justify-center w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black hover:opacity-85 transition-opacity cursor-pointer"
+                title="Stop generating"
               >
                 <Square className="w-3.5 h-3.5 fill-current" />
               </button>
@@ -466,7 +457,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 disabled={!input.trim() && attachments.length === 0}
                 className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all cursor-pointer ${
                   input.trim() || attachments.length > 0
-                    ? 'bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 shadow-xs hover:bg-zinc-800 dark:hover:bg-zinc-200'
+                    ? 'bg-black dark:bg-white text-white dark:text-black shadow-xs hover:opacity-85'
                     : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed'
                 }`}
                 title="Send message (Enter)"
@@ -478,8 +469,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         </div>
       </div>
 
-      <p className="mt-2 text-center text-[11px] text-[#9E9990] dark:text-[#736E65]">
-        Astrolabe provides lightning-fast reasoning across all languages. Verify critical code, facts, or data.
+      <p className="mt-2 text-center text-[11px] text-zinc-400 dark:text-zinc-500">
+        Astrolabe AI can make mistakes. Consider checking important information.
       </p>
     </div>
   );

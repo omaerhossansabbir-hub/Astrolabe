@@ -8,17 +8,15 @@ export interface ParsedMessageContent {
 
 /**
  * Extracts <astrolabeThinking>...</astrolabeThinking> and <astrolabeArtifact>...</astrolabeArtifact>
- * (with backward compatibility for <castleArtifact> tags)
  */
 export function parseAstrolabeResponse(rawText: string, messageId: string = 'art-1'): ParsedMessageContent {
   let text = rawText;
   let thinking: string | undefined;
   let artifact: AstrolabeArtifact | undefined;
 
-  // 1. Extract Thinking tags: <astrolabeThinking> or <castleThinking> or <thinking>
+  // 1. Extract Thinking tags: <astrolabeThinking> or <thinking>
   const thinkingMatch =
     text.match(/<astrolabeThinking>([\s\S]*?)<\/astrolabeThinking>/i) ||
-    text.match(/<castleThinking>([\s\S]*?)<\/castleThinking>/i) ||
     text.match(/<thinking>([\s\S]*?)<\/thinking>/i);
 
   if (thinkingMatch) {
@@ -26,8 +24,8 @@ export function parseAstrolabeResponse(rawText: string, messageId: string = 'art
     text = text.replace(thinkingMatch[0], '').trim();
   }
 
-  // 2. Extract explicit <astrolabeArtifact ...>...</astrolabeArtifact> or <castleArtifact ...>
-  const artifactRegex = /<(?:astrolabeArtifact|castleArtifact)(?:\s+id="([^"]*)")?(?:\s+type="([^"]*)")?(?:\s+language="([^"]*)")?(?:\s+title="([^"]*)")?>([\s\S]*?)<\/(?:astrolabeArtifact|castleArtifact)>/i;
+  // 2. Extract explicit <astrolabeArtifact ...>...</astrolabeArtifact>
+  const artifactRegex = /<astrolabeArtifact(?:\s+id="([^"]*)")?(?:\s+type="([^"]*)")?(?:\s+language="([^"]*)")?(?:\s+title="([^"]*)")?>([\s\S]*?)<\/astrolabeArtifact>/i;
   const artifactMatch = text.match(artifactRegex);
 
   if (artifactMatch) {
@@ -49,8 +47,8 @@ export function parseAstrolabeResponse(rawText: string, messageId: string = 'art
 
     text = text.replace(artifactMatch[0], '').trim();
   } else {
-    // 3. Fallback: Check if message contains a complete HTML / SVG / Mermaid / Python code block
-    const codeBlockMatch = text.match(/```(html|svg|jsx|javascript|python|css|mermaid)\n([\s\S]{120,}?)```/i);
+    // 3. Fallback: Check if message contains a complete HTML / SVG / Mermaid block
+    const codeBlockMatch = text.match(/```(html|svg|mermaid)\n([\s\S]{120,}?)```/i);
     if (codeBlockMatch) {
       const lang = codeBlockMatch[1].toLowerCase();
       const code = codeBlockMatch[2].trim();
@@ -69,7 +67,7 @@ export function parseAstrolabeResponse(rawText: string, messageId: string = 'art
         const title = headingMatch
           ? headingMatch[1].trim()
           : isSvg
-          ? 'Vector Astrolabe Illustration'
+          ? 'Vector Illustration'
           : isMermaid
           ? 'Architecture Diagram'
           : 'Interactive Application';
@@ -98,10 +96,8 @@ export function parseAstrolabeResponse(rawText: string, messageId: string = 'art
   };
 }
 
-export const parseCastleResponse = parseAstrolabeResponse;
-
 /**
- * Prepares standalone HTML for safe iframe execution with Mermaid support
+ * Prepares standalone HTML for safe iframe execution with clean monochrome styling
  */
 export function buildIframeContent(artifact: AstrolabeArtifact): string {
   const { language, content } = artifact;
@@ -121,14 +117,14 @@ export function buildIframeContent(artifact: AstrolabeArtifact): string {
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      background: #FAF9F5;
+      background: #FFFFFF;
       font-family: system-ui, sans-serif;
     }
     .mermaid {
       background: #ffffff;
       padding: 24px;
       border-radius: 12px;
-      border: 1px solid #E8E2D7;
+      border: 1px solid #E4E4E7;
       box-shadow: 0 4px 16px rgba(0,0,0,0.04);
     }
   </style>
@@ -157,7 +153,7 @@ export function buildIframeContent(artifact: AstrolabeArtifact): string {
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      background: #FAF9F5;
+      background: #FFFFFF;
       box-sizing: border-box;
       font-family: system-ui, sans-serif;
     }
@@ -189,8 +185,8 @@ export function buildIframeContent(artifact: AstrolabeArtifact): string {
       margin: 0;
       padding: 16px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #faf9f6;
-      color: #1e1e1e;
+      background-color: #FFFFFF;
+      color: #09090B;
     }
   </style>
 </head>
@@ -200,7 +196,6 @@ export function buildIframeContent(artifact: AstrolabeArtifact): string {
 </html>`;
   }
 
-  // Fallback
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -210,16 +205,16 @@ export function buildIframeContent(artifact: AstrolabeArtifact): string {
       font-family: system-ui, sans-serif;
       padding: 20px;
       line-height: 1.6;
-      color: #222;
-      background: #FAF9F5;
+      color: #09090B;
+      background: #FFFFFF;
     }
     pre {
-      background: #F4F0E8;
+      background: #F4F4F5;
       padding: 14px;
       border-radius: 8px;
       overflow-x: auto;
       font-family: monospace;
-      border: 1px solid #E8E2D7;
+      border: 1px solid #E4E4E7;
     }
   </style>
 </head>
