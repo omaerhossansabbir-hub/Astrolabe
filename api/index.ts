@@ -102,50 +102,138 @@ function buildGeminiContents(messages: Array<{ role: string; content: string; at
   return contents;
 }
 
-async function withExponentialBackoff<T>(fn: () => Promise<T>, maxRetries = 2): Promise<T> {
-  let lastError: any;
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (err: any) {
-      lastError = err;
-      const status = err?.status || err?.code;
-      const msg = String(err?.message || '').toLowerCase();
-      const isTransient =
-        status === 429 ||
-        status === 500 ||
-        status === 503 ||
-        msg.includes('resource_exhausted') ||
-        msg.includes('unavailable') ||
-        msg.includes('timeout');
+function isTransientOrCapacityError(err: any): boolean {
+  const status = err?.status || err?.code;
+  const msg = String(err?.message || err || '').toLowerCase();
+  return (
+    status === 429 ||
+    status === 500 ||
+    status === 503 ||
+    msg.includes('503') ||
+    msg.includes('unavailable') ||
+    msg.includes('high demand') ||
+    msg.includes('overloaded') ||
+    msg.includes('resource_exhausted') ||
+    msg.includes('timeout')
+  );
+}
 
-      if (!isTransient || attempt === maxRetries) {
-        throw err;
-      }
-      const delayMs = 600 * Math.pow(2, attempt);
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
-    }
+interface ModelAttempt {
+  model: string;
+  thinkingLevel: ThinkingLevel;
+  useTools: boolean;
+  delayBeforeMs?: number;
+}
+
+function buildModelAttemptPlan(
+  primaryModel: string,
+  primaryThinking: ThinkingLevel,
+  useSearch: boolean
+): ModelAttempt[] {
+  const secondaryModel =
+    primaryModel === 'gemini-3.1-flash-lite' ? 'gemini-4-hydrogen' : 'gemini-3.1-flash-lite';
+  const secondaryThinking =
+    secondaryModel === 'gemini-3.1-flash-lite' ? ThinkingLevel.MINIMAL : ThinkingLevel.LOW;
+
+  const attempts: ModelAttempt[] = [
+    { model: primaryModel, thinkingLevel: primaryThinking, useTools: useSearch },
+  ];
+
+  if (useSearch) {
+    attempts.push({
+      model: primaryModel,
+      thinkingLevel: primaryThinking,
+      useTools: false,
+      delayBeforeMs: 100,
+    });
   }
-  throw lastError;
+
+  // Immediate failover to alternate Gemini capacity pool on 503 / high demand / 429 / slow stall
+  attempts.push({
+    model: secondaryModel,
+    thinkingLevel: secondaryThinking,
+    useTools: false,
+    delayBeforeMs: 50,
+  });
+
+  // Final quick retry on secondary pool if both spiked transiently
+  attempts.push({
+    model: secondaryModel,
+    thinkingLevel: secondaryThinking,
+    useTools: false,
+    delayBeforeMs: 400,
+  });
+
+  return attempts;
+}
+
+async function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => {
+          const err: any = new Error(message);
+          err.status = 503;
+          reject(err);
+        }, ms);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+function extractCleanApiErrorMessage(error: any): string {
+  const raw = String(error?.message || error || 'Unknown error');
+  try {
+    const parsed = JSON.parse(raw);
+    const inner = parsed?.error?.message || parsed?.message;
+    if (typeof inner === 'string') {
+      try {
+        const deep = JSON.parse(inner);
+        return deep?.error?.message || deep?.message || inner;
+      } catch {
+        return inner;
+      }
+    }
+  } catch {
+    // not JSON
+  }
+  return raw;
 }
 
 function formatReadableError(error: any): string {
   const rawMessage = String(error?.message || error || 'Unknown error');
+  const cleanMessage = extractCleanApiErrorMessage(error);
+  const lower = `${rawMessage} ${cleanMessage}`.toLowerCase();
+
   if (rawMessage.includes('GEMINI_API_KEY is not configured')) {
     return 'Server AI configuration is missing (GEMINI_API_KEY). Please set GEMINI_API_KEY in AI Studio Secrets or Vercel Environment Variables and retry.';
   }
   if (
-    rawMessage.includes('PERMISSION_DENIED') ||
-    rawMessage.includes('API_KEY_INVALID') ||
+    lower.includes('permission_denied') ||
+    lower.includes('api_key_invalid') ||
+    lower.includes('api key not valid') ||
     error?.status === 403 ||
     error?.status === 400
   ) {
-    return 'API key validation failed. Please verify GEMINI_API_KEY in Settings > Secrets or Vercel Environment Variables.';
+    return 'API key validation failed. Please verify your GEMINI_API_KEY in Settings > Secrets or Vercel Environment Variables.';
   }
-  if (rawMessage.includes('RESOURCE_EXHAUSTED') || error?.status === 429) {
-    return 'Rate limit reached momentarily. Please wait a few seconds and click Retry.';
+  if (
+    lower.includes('high demand') ||
+    lower.includes('unavailable') ||
+    error?.status === 503 ||
+    lower.includes('"code":503') ||
+    lower.includes('"code": 503')
+  ) {
+    return 'AI সার্ভারে এই মুহূর্তে সাময়িক অতিরিক্ত চাপ রয়েছে। অনুগ্রহ করে কয়েক সেকেন্ড পর Retry বাটনে ক্লিক করুন।';
   }
-  return `Unable to complete request: ${rawMessage}`;
+  if (lower.includes('resource_exhausted') || error?.status === 429) {
+    return 'সাময়িকভাবে অনুরোধের সীমা (Rate Limit) পূর্ণ হয়েছে। কয়েক সেকেন্ড অপেক্ষা করে আবার Retry করুন।';
+  }
+  return `অনুরোধ সম্পন্ন করা যায়নি: ${cleanMessage}`;
 }
 
 // Health check endpoint
@@ -153,6 +241,7 @@ app.get('/api/health', (_req, res) => {
   res.json({
     status: 'ok',
     model: 'gemini-4-hydrogen',
+    fallbackModel: 'gemini-3.1-flash-lite',
     brand: 'Astrolabe AI',
     configured: Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY),
   });
@@ -167,25 +256,42 @@ app.post('/api/enhance-prompt', async (req, res) => {
     }
 
     const ai = createGeminiClient();
-    const response = await withExponentialBackoff(() =>
-      ai.models.generateContent({
-        model: 'gemini-4-hydrogen',
-        contents: `You are an expert AI prompt engineer. Improve and clarify the following prompt so an AI gives the most accurate, comprehensive answer while preserving the user's intent and language (Bengali if input is Bengali, English if English). Return ONLY the improved prompt text with no quotes or preamble.\n\nPrompt: "${prompt}"`,
-        config: {
-          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-        },
-      })
-    );
+    const plan = buildModelAttemptPlan('gemini-4-hydrogen', ThinkingLevel.LOW, false);
+    let lastError: any;
 
-    const enhancedPrompt = response.text?.trim() || prompt;
-    res.json({ enhancedPrompt });
+    for (let idx = 0; idx < plan.length; idx++) {
+      const attempt = plan[idx];
+      const hasMoreFallbacks = idx < plan.length - 1;
+      try {
+        if (attempt.delayBeforeMs) {
+          await new Promise((r) => setTimeout(r, attempt.delayBeforeMs));
+        }
+        const genPromise = ai.models.generateContent({
+          model: attempt.model,
+          contents: `You are an expert AI prompt engineer. Improve and clarify the following prompt so an AI gives the most accurate, comprehensive answer while preserving the user's intent and language (Bengali if input is Bengali, English if English). Return ONLY the improved prompt text with no quotes or preamble.\n\nPrompt: "${prompt}"`,
+          config: {
+            thinkingConfig: { thinkingLevel: attempt.thinkingLevel },
+          },
+        });
+        const response = hasMoreFallbacks
+          ? await withTimeout(genPromise, 5500, 'Primary model timed out')
+          : await genPromise;
+        const enhancedPrompt = response.text?.trim() || prompt;
+        return res.json({ enhancedPrompt });
+      } catch (err: any) {
+        lastError = err;
+        if (!isTransientOrCapacityError(err)) throw err;
+      }
+    }
+
+    throw lastError;
   } catch (error: any) {
     console.error('Enhance prompt error:', error);
     res.status(500).json({ error: formatReadableError(error) });
   }
 });
 
-// Streaming chat endpoint (SSE)
+// Streaming chat endpoint (SSE) with automatic multi-model capacity failover
 app.post('/api/chat/stream', async (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
@@ -255,49 +361,19 @@ app.post('/api/chat/stream', async (req, res) => {
       }
     }, 3000);
 
-    const config: any = {
-      systemInstruction: fullSystemInstruction,
-      thinkingConfig: { thinkingLevel },
-    };
-
-    if (useSearch) {
-      config.tools = [{ googleSearch: {} }];
-    }
-
-    let stream: any;
-    try {
-      stream = await withExponentialBackoff(() =>
-        ai.models.generateContentStream({
-          model: geminiModel,
-          contents,
-          config,
-        })
-      );
-    } catch (searchErr: any) {
-      if (useSearch) {
-        const { tools: _dropped, ...standardConfig } = config;
-        stream = await withExponentialBackoff(() =>
-          ai.models.generateContentStream({
-            model: geminiModel,
-            contents,
-            config: standardConfig,
-          })
-        );
-      } else {
-        throw searchErr;
-      }
-    }
-
+    const plan = buildModelAttemptPlan(geminiModel, thinkingLevel, Boolean(useSearch));
     const collectedSources = new Map<string, { title: string; uri: string }>();
+    let hasYieldedText = false;
+    let lastError: any = null;
 
-    for await (const chunk of stream) {
-      const text = chunk.text;
+    const emitChunk = (chunk: any) => {
+      const text = chunk?.text;
       if (text) {
+        hasYieldedText = true;
         res.write(`data: ${JSON.stringify({ text })}\n\n`);
         if ((res as any).flush) (res as any).flush();
       }
-
-      const groundingChunks = chunk.candidates?.[0]?.groundingMetadata?.groundingChunks;
+      const groundingChunks = chunk?.candidates?.[0]?.groundingMetadata?.groundingChunks;
       if (Array.isArray(groundingChunks)) {
         for (const gc of groundingChunks) {
           if (gc?.web?.uri) {
@@ -308,6 +384,73 @@ app.post('/api/chat/stream', async (req, res) => {
           }
         }
       }
+    };
+
+    for (let idx = 0; idx < plan.length; idx++) {
+      if (hasYieldedText) break;
+      const attempt = plan[idx];
+      const hasMoreFallbacks = idx < plan.length - 1;
+
+      try {
+        if (attempt.delayBeforeMs) {
+          await new Promise((r) => setTimeout(r, attempt.delayBeforeMs));
+        }
+
+        const config: any = {
+          systemInstruction: fullSystemInstruction,
+          thinkingConfig: { thinkingLevel: attempt.thinkingLevel },
+        };
+        if (attempt.useTools) {
+          config.tools = [{ googleSearch: {} }];
+        }
+
+        const streamPromise = ai.models.generateContentStream({
+          model: attempt.model,
+          contents,
+          config,
+        });
+
+        const stream = hasMoreFallbacks
+          ? await withTimeout(streamPromise, 5500, 'Primary model connection timed out')
+          : await streamPromise;
+
+        const iterator = stream[Symbol.asyncIterator]();
+        const firstStep = hasMoreFallbacks
+          ? await withTimeout(iterator.next(), 5500, 'Primary model first chunk timed out')
+          : await iterator.next();
+
+        if (!firstStep.done && firstStep.value) {
+          emitChunk(firstStep.value);
+        }
+
+        if (!firstStep.done) {
+          while (true) {
+            const step = await iterator.next();
+            if (step.done) break;
+            if (step.value) emitChunk(step.value);
+          }
+        }
+
+        if (hasYieldedText) {
+          break;
+        }
+      } catch (attemptErr: any) {
+        lastError = attemptErr;
+        console.warn(
+          `Astrolabe stream attempt failed (${attempt.model}, tools=${attempt.useTools}):`,
+          extractCleanApiErrorMessage(attemptErr)
+        );
+        if (hasYieldedText) {
+          break;
+        }
+        if (!attempt.useTools && !isTransientOrCapacityError(attemptErr)) {
+          throw attemptErr;
+        }
+      }
+    }
+
+    if (!hasYieldedText && lastError) {
+      throw lastError;
     }
 
     if (collectedSources.size > 0) {
@@ -328,7 +471,7 @@ app.post('/api/chat/stream', async (req, res) => {
   }
 });
 
-// Non-streaming chat endpoint
+// Non-streaming chat endpoint with automatic multi-model capacity failover
 app.post('/api/chat', async (req, res) => {
   try {
     const {
@@ -366,39 +509,44 @@ app.post('/api/chat', async (req, res) => {
       .filter(Boolean)
       .join('\n');
 
-    const config: any = {
-      systemInstruction: fullSystemInstruction,
-      thinkingConfig: { thinkingLevel },
-    };
-    if (useSearch) {
-      config.tools = [{ googleSearch: {} }];
-    }
+    const plan = buildModelAttemptPlan(geminiModel, thinkingLevel, Boolean(useSearch));
+    let lastError: any = null;
 
-    let response: any;
-    try {
-      response = await withExponentialBackoff(() =>
-        ai.models.generateContent({
-          model: geminiModel,
+    for (let idx = 0; idx < plan.length; idx++) {
+      const attempt = plan[idx];
+      const hasMoreFallbacks = idx < plan.length - 1;
+      try {
+        if (attempt.delayBeforeMs) {
+          await new Promise((r) => setTimeout(r, attempt.delayBeforeMs));
+        }
+        const config: any = {
+          systemInstruction: fullSystemInstruction,
+          thinkingConfig: { thinkingLevel: attempt.thinkingLevel },
+        };
+        if (attempt.useTools) {
+          config.tools = [{ googleSearch: {} }];
+        }
+
+        const genPromise = ai.models.generateContent({
+          model: attempt.model,
           contents,
           config,
-        })
-      );
-    } catch (searchErr: any) {
-      if (useSearch) {
-        const { tools: _dropped, ...standardConfig } = config;
-        response = await withExponentialBackoff(() =>
-          ai.models.generateContent({
-            model: geminiModel,
-            contents,
-            config: standardConfig,
-          })
-        );
-      } else {
-        throw searchErr;
+        });
+
+        const response = hasMoreFallbacks
+          ? await withTimeout(genPromise, 5500, 'Primary model timed out')
+          : await genPromise;
+
+        return res.json({ text: response.text || '' });
+      } catch (attemptErr: any) {
+        lastError = attemptErr;
+        if (!attempt.useTools && !isTransientOrCapacityError(attemptErr)) {
+          throw attemptErr;
+        }
       }
     }
 
-    res.json({ text: response.text || '' });
+    throw lastError;
   } catch (error: any) {
     console.error('Astrolabe /api/chat error:', error);
     res.status(500).json({ error: formatReadableError(error) });
