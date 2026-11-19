@@ -301,7 +301,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
                 <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
                   <div className="text-[11px] font-semibold text-zinc-500 uppercase">Core Intelligence</div>
-                  <div className="font-semibold text-zinc-950 dark:text-white mt-0.5">Gemini 4 Hydrogen</div>
+                  <div className="font-semibold text-zinc-950 dark:text-white mt-0.5">Astrolabe 3.5 Engine</div>
                 </div>
               </div>
             </div>
