@@ -73,17 +73,47 @@ export default function App() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const hasInitialCloudSyncRef = useRef<string | null>(null);
+  const hasInitialProjectsSyncRef = useRef<string | null>(null);
+
   // Sync Firestore chats and projects only when authenticated with Firebase
   useEffect(() => {
-    if (!isCloudAuthenticated || !user) return;
+    if (!isCloudAuthenticated || !user) {
+      hasInitialCloudSyncRef.current = null;
+      hasInitialProjectsSyncRef.current = null;
+      return;
+    }
 
     syncUserProfile(user);
+    const uid = user.uid;
 
-    const unsubChats = subscribeToUserChats(user.uid, (cloudChats) => {
+    const unsubChats = subscribeToUserChats(uid, (cloudChats) => {
+      if (hasInitialCloudSyncRef.current !== uid) {
+        hasInitialCloudSyncRef.current = uid;
+        if (cloudChats.length === 0) {
+          const localChats = getSavedChats();
+          if (localChats.length > 0) {
+            localChats.forEach((c) => saveChatToCloud(uid, c));
+            setChats(localChats);
+            return;
+          }
+        }
+      }
       setChats(cloudChats);
     });
 
-    const unsubProjects = subscribeToUserProjects(user.uid, (cloudProjects) => {
+    const unsubProjects = subscribeToUserProjects(uid, (cloudProjects) => {
+      if (hasInitialProjectsSyncRef.current !== uid) {
+        hasInitialProjectsSyncRef.current = uid;
+        if (cloudProjects.length === 0) {
+          const localProjects = getSavedProjects();
+          if (localProjects.length > 0) {
+            localProjects.forEach((p) => saveProjectToCloud(uid, p));
+            setProjects(localProjects);
+            return;
+          }
+        }
+      }
       setProjects(cloudProjects);
     });
 
@@ -123,15 +153,19 @@ export default function App() {
       setSelectedModel(currentChat.model || settings.defaultModel);
       persistActiveChatId(currentChat.id);
 
-      const chatArtifact = currentChat.messages
-        .slice()
-        .reverse()
-        .find((m) => m.artifact)?.artifact;
-      if (chatArtifact && !activeArtifact) {
-        setActiveArtifact(chatArtifact);
+      const chatArtifact =
+        currentChat.messages
+          .slice()
+          .reverse()
+          .find((m) => m.artifact)?.artifact || null;
+      setActiveArtifact(chatArtifact);
+      if (!chatArtifact) {
+        setIsArtifactsOpen(false);
       }
     } else {
       persistActiveChatId(null);
+      setActiveArtifact(null);
+      setIsArtifactsOpen(false);
     }
   }, [activeChatId]);
 
@@ -154,7 +188,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeProjectId, selectedModel]);
+  }, [activeProjectId, selectedModel, isCloudAuthenticated, user]);
 
   const handleCreateNewChat = () => {
     const newChat: ChatSession = {
@@ -335,7 +369,14 @@ export default function App() {
       });
 
       if (!response.ok) {
-        throw new Error(`Server returned status ${response.status}`);
+        let errDetails = `Server returned status ${response.status}`;
+        try {
+          const errJson = await response.json();
+          if (errJson?.error) errDetails = errJson.error;
+        } catch {
+          // ignore non-JSON body
+        }
+        throw new Error(errDetails);
       }
 
       const reader = response.body?.getReader();

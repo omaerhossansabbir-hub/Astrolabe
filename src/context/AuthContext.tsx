@@ -127,20 +127,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.warn('Google Sign In caught:', err?.code, err?.message);
       const code = err?.code || '';
 
-      if (code === 'auth/unauthorized-domain' || code === 'auth/operation-not-supported-in-this-environment') {
+      if (code === 'auth/unauthorized-domain') {
         const currentHost = typeof window !== 'undefined' ? window.location.hostname : 'your-domain';
         setUnauthorizedDomainHost(currentHost);
         setSignInError(
-          `ডোমেইন সেটিংস: "${currentHost}" ডোমেইনটি ফায়ারবেসের Authorized Domains তালিকায় যুক্ত করতে হবে। এছাড়া আপনি সরাসরি নিচে ইমেইল/পাসওয়ার্ড দিয়ে অথবা গেস্ট মোডে তাৎক্ষণিক লগইন করতে পারেন।`
+          `ডোমেইন সেটিংস প্রয়োজন: "${currentHost}" ডোমেইনটি Firebase Console-এর Authorized Domains তালিকায় একবার যোগ করলেই ডিরেক্ট Google সাইন-ইন চালু হয়ে যাবে।`
         );
+        setIsAuthModalOpen(true);
+      } else if (code === 'auth/operation-not-supported-in-this-environment') {
+        setSignInError(
+          'এই ব্রাউজার বা প্রিভিউ ফ্রেমে পপআপ লগইন সমর্থিত নয়। অ্যাপটি নতুন ট্যাবে খুলে চেষ্টা করুন অথবা নিচে গেস্ট/ইমেইল ব্যবহার করুন।'
+        );
+        setIsAuthModalOpen(true);
       } else if (code === 'auth/popup-blocked') {
         setSignInError(
-          'আপনার ব্রাউজারে পপআপ ব্লক করা রয়েছে। অ্যাড্রেস বারের পপআপ আইকন থেকে Allow করুন অথবা নিচে ইমেইল/গেস্ট প্রোফাইলে লগইন করুন।'
+          'আপনার ব্রাউজারে পপআপ ব্লক করা রয়েছে। অ্যাড্রেস বার থেকে Pop-ups Allow করে আবার চেষ্টা করুন।'
         );
-      } else if (code === 'auth/popup-closed-by-user') {
-        setSignInError('লগইন পপআপ উইন্ডো বন্ধ করা হয়েছে।');
+        setIsAuthModalOpen(true);
+      } else if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        setSignInError('গুগল সাইন-ইন পপআপটি সম্পূর্ণ হওয়ার আগেই বন্ধ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
+      } else if (code === 'auth/operation-not-allowed') {
+        setSignInError(
+          'Firebase Console-এ Google Sign-in Provider সক্রিয় করা নেই। Authentication > Sign-in method থেকে Google চালু করুন।'
+        );
+        setIsAuthModalOpen(true);
+      } else if (code === 'auth/network-request-failed') {
+        setSignInError('ইন্টারনেট সংযোগে সমস্যা হয়েছে। নেটওয়ার্ক চেক করে আবার চেষ্টা করুন।');
       } else {
-        setSignInError(err?.message || 'গুগল লগইন সম্পন্ন করা যায়নি। অনুগ্রহ করে ইমেইল দিয়ে লগইন করুন।');
+        setSignInError(err?.message || 'গুগল লগইন সম্পন্ন করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।');
+        setIsAuthModalOpen(true);
       }
     } finally {
       setIsSigningIn(false);
@@ -169,6 +184,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSignInError('ইমেইল বা পাসওয়ার্ড সঠিক নয়। অনুগ্রহ করে পুনরায় যাচাই করুন।');
       } else if (code === 'auth/invalid-email') {
         setSignInError('সঠিক ইমেইল অ্যাড্রেস লিখুন।');
+      } else if (code === 'auth/operation-not-allowed') {
+        setSignInError('Firebase Console > Sign-in method-এ Email/Password চালু করা নেই।');
       } else {
         setSignInError(err?.message || 'ইমেইল সাইন-ইন সম্পন্ন করা যায়নি।');
       }
@@ -200,6 +217,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSignInError('এই ইমেইল দিয়ে ইতোমধ্যে একটি অ্যাকাউন্ট রয়েছে। "সাইন ইন" অপশনটি ব্যবহার করুন।');
       } else if (code === 'auth/weak-password') {
         setSignInError('পাসওয়ার্ডটি অন্তত ৬ অক্ষরের হতে হবে।');
+      } else if (code === 'auth/operation-not-allowed') {
+        setSignInError('Firebase Console > Sign-in method-এ Email/Password চালু করা নেই।');
       } else {
         setSignInError(err?.message || 'অ্যাকাউন্ট তৈরি করা যায়নি।');
       }

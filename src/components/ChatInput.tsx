@@ -41,9 +41,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const [input, setInput] = useState('');
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const [isListening, setIsListening] = useState(false);
-  const [voiceLang] = useState<'bn-BD' | 'en-US'>(
-    defaultLanguage === 'en' ? 'en-US' : 'bn-BD'
-  );
+  const voiceLang: 'bn-BD' | 'en-US' =
+    defaultLanguage === 'en' ? 'en-US' : 'bn-BD';
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [voiceError, setVoiceError] = useState<string | null>(null);
 

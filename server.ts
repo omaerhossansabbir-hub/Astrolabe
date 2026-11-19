@@ -1,5 +1,4 @@
 import express from 'express';
-import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -16,7 +15,7 @@ const PORT = Number(process.env.PORT) || 3000;
 app.use(express.json({ limit: '25mb' }));
 
 function createGeminiClient(): GoogleGenAI {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY is not configured on the server.');
   }
@@ -142,10 +141,10 @@ async function withExponentialBackoff<T>(fn: () => Promise<T>, maxRetries = 2): 
 function formatReadableError(error: any): string {
   const rawMessage = String(error?.message || error || 'Unknown error');
   if (rawMessage.includes('GEMINI_API_KEY is not configured')) {
-    return 'Server AI configuration is missing (GEMINI_API_KEY). Please set the API key in Settings > Secrets and retry.';
+    return 'Server AI configuration is missing (GEMINI_API_KEY). Please set GEMINI_API_KEY in AI Studio Secrets or Vercel Environment Variables and retry.';
   }
   if (rawMessage.includes('PERMISSION_DENIED') || rawMessage.includes('API_KEY_INVALID') || error?.status === 403 || error?.status === 400) {
-    return 'API key validation failed. Please verify GEMINI_API_KEY in Settings > Secrets.';
+    return 'API key validation failed. Please verify GEMINI_API_KEY in Settings > Secrets or Vercel Environment Variables.';
   }
   if (rawMessage.includes('RESOURCE_EXHAUSTED') || error?.status === 429) {
     return 'Rate limit reached momentarily. Please wait a few seconds and click Retry.';
@@ -159,7 +158,7 @@ app.get('/api/health', (_req, res) => {
     status: 'ok',
     model: 'gemini-4-hydrogen',
     brand: 'Astrolabe AI',
-    configured: Boolean(process.env.GEMINI_API_KEY),
+    configured: Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY),
   });
 });
 
@@ -378,13 +377,29 @@ app.post('/api/chat', async (req, res) => {
       config.tools = [{ googleSearch: {} }];
     }
 
-    const response = await withExponentialBackoff(() =>
-      ai.models.generateContent({
-        model: geminiModel,
-        contents,
-        config,
-      })
-    );
+    let response: any;
+    try {
+      response = await withExponentialBackoff(() =>
+        ai.models.generateContent({
+          model: geminiModel,
+          contents,
+          config,
+        })
+      );
+    } catch (searchErr: any) {
+      if (useSearch) {
+        const { tools: _dropped, ...standardConfig } = config;
+        response = await withExponentialBackoff(() =>
+          ai.models.generateContent({
+            model: geminiModel,
+            contents,
+            config: standardConfig,
+          })
+        );
+      } else {
+        throw searchErr;
+      }
+    }
 
     res.json({ text: response.text || '' });
   } catch (error: any) {
@@ -397,6 +412,7 @@ async function startServer() {
   const isProd = process.env.NODE_ENV === 'production';
 
   if (!isProd) {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',

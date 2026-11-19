@@ -64,6 +64,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     user,
     isSigningIn,
     signInError,
+    unauthorizedDomainHost,
     clearSignInError,
     signInWithGoogle,
     signInAsGuest,
@@ -387,6 +388,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         ✕
                       </button>
                     </div>
+                    {unauthorizedDomainHost && (
+                      <button
+                        onClick={openAuthModal}
+                        className="w-full py-1.5 px-2 bg-zinc-200 dark:bg-zinc-700 text-zinc-950 dark:text-white rounded-lg font-semibold text-[11px] hover:opacity-90 cursor-pointer"
+                      >
+                        ডোমেইন সেটিংস দেখুন ({unauthorizedDomainHost})
+                      </button>
+                    )}
                     <button
                       onClick={() => signInAsGuest('অ্যাস্ট্রো ইউজার')}
                       className="w-full py-1.5 px-2 bg-black dark:bg-white text-white dark:text-black rounded-lg font-semibold text-[11px] hover:opacity-90 cursor-pointer"
